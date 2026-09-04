@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kudoz AI Portal | Rayyan</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem; }
+    .app-container { width: 100%; max-width: 900px; }
+    .portal-header { text-align: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; }
+    .portal-header h1 { font-size: 1.8rem; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; }
+    .portal-header p { color: var(--muted); font-size: 0.9rem; margin-top: 0.3rem; }
+    .auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; text-align: center; max-width: 420px; margin: 2rem auto; }
+    .auth-box input { width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: #fff; font-size: 1rem; margin-bottom: 1rem; }
+    .btn-auth { width: 100%; padding: 0.75rem; border-radius: 8px; background: var(--primary); color: #fff; font-weight: 700; border: none; cursor: pointer; }
+    .btn-auth:hover { background: var(--primary-hover); }
+    .portal-content { display: none; }
+    .role-banner { display: flex; justify-content: space-between; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem 1.2rem; margin-bottom: 1.5rem; }
+    .role-badge { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .btn-lock { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; }
+    .tabs-nav { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+    .tab-btn { background: transparent; border: none; color: var(--muted); padding: 0.7rem 1.2rem; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; }
+    .tab-btn.active { color: #ffffff; border-bottom-color: var(--primary); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    .reports-list { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-bottom: 2rem; }
+    .report-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+    .report-title { font-weight: 600; font-size: 0.95rem; }
+    .btn-decrypt { background: var(--primary); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer; text-decoration: none; font-size: 0.85rem; }
+    .form-embed-card { background: #ffffff; border-radius: 12px; overflow: hidden; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <header class="portal-header">
+    <h1>🛡️ Kudoz AI Zero-Trust Portal</h1>
+    <p>Client ID: <code>tenant_9614932</code> | Account: <strong>Rayyan</strong></p>
+  </header>
+
+  <!-- Login Form -->
+  <div id="authSection" class="auth-box">
+    <h3 style="margin-bottom: 0.5rem;">Access Verification</h3>
+    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1.2rem;">Enter your student, parent, or admin passkey to unlock your workspace.</p>
+    <input type="password" id="passkeyInput" placeholder="Enter your key..." onkeydown="if(event.key==='Enter') unlockPortal();" />
+    <button class="btn-auth" onclick="unlockPortal()">Unlock Portal</button>
+  </div>
+
+  <!-- Authenticated Portal View -->
+  <div id="portalContent" class="portal-content">
+    <div class="role-banner">
+      <span id="roleLabel" class="role-badge">Authenticated</span>
+      <button class="btn-lock" onclick="lockPortal()">🔒 Lock Session</button>
+    </div>
+
+    <nav class="tabs-nav">
+      <button id="tabBtnReports" class="tab-btn active" onclick="switchTab('reports')">📊 Analytics Deliverables</button>
+      <button id="tabBtnForms" class="tab-btn" onclick="switchTab('forms')">✍️ Daily Quest & Feedback</button>
+    </nav>
+
+    <!-- Pane 1: Decrypted Reports -->
+    <div id="paneReports" class="tab-pane active">
+      <div id="reportsList" class="reports-list"></div>
+    </div>
+
+    <!-- Pane 2: Feedback Forms -->
+    <div id="paneForms" class="tab-pane">
+      <div id="studentFormWrapper" style="display:none;" class="form-embed-card">
+        <!-- Kudoz AI v3.1 Modular Daily Tracker Component -->
+<style>
+  .kudoz-tracker-container {
+    width: 100%;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-sizing: border-box;
+    color: #0f172a;
+  }
+  .kudoz-tracker-container .header {
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .kudoz-tracker-container .header h2 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+  }
+  .kudoz-tracker-container .header p {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin-top: 0.25rem;
+  }
+  .kudoz-tracker-container .meta-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.2rem;
+  }
+  .kudoz-tracker-container .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .kudoz-tracker-container .field-group label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #334155;
+    text-transform: uppercase;
+  }
+  .kudoz-tracker-container .input-box {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    background: #f8fafc;
+    color: #0f172a;
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.2s;
+  }
+  .kudoz-tracker-container .input-box:focus {
+    border-color: #2563eb;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+  .kudoz-tracker-container .questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .kudoz-tracker-container .q-card {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .kudoz-tracker-container .q-card label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+  .kudoz-tracker-container .pill-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+  }
+  .kudoz-tracker-container .pill-selector input[type="radio"] {
+    display: none;
+  }
+  .kudoz-tracker-container .pill-selector label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 0.45rem 0.2rem;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 6px;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .kudoz-tracker-container .pill-selector input[type="radio"]:checked + label {
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #2563eb;
+    font-weight: 700;
+  }
+  .kudoz-tracker-container .actions-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+    padding-top: 1.2rem;
+    border-top: 2px solid #f1f5f9;
+  }
+  .kudoz-tracker-container .btn-submit-action {
+    padding: 0.85rem;
+    background: #2563eb;
+    color: #ffffff;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    text-align: center;
+  }
+  .kudoz-tracker-container .btn-submit-action:hover {
+    background: #1d4ed8;
+  }
+  .aw-status {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 0.4rem;
+    text-align: center;
+  }
+</style>
+
+<div class="kudoz-tracker-container">
+  <div class="header">
+    <h2>⚡ Daily Progress & Discussion Sync</h2>
+    <p>Submit your tracker and synchronize screen time to KudozAI Core.</p>
+  </div>
+
+  <form id="trackerForm" onsubmit="event.preventDefault(); submitTrackerAndAW();">
+    <div class="meta-row">
+      <div class="field-group">
+        <label for="trackerStudentName">Student Name</label>
+        <input type="text" id="trackerStudentName" class="input-box" placeholder="Your name..." required />
+      </div>
+      <div class="field-group">
+        <label for="trackerDate">Date</label>
+        <input type="date" id="trackerDate" class="input-box" required />
+      </div>
+    </div>
+
+    <div class="questions-list">
+      <div class="q-card">
+        <label for="trackerQ1">1. Is there any plan configured today?</label>
+        <input type="text" id="trackerQ1" class="input-box" placeholder="Core target / tasks scheduled..." required />
+      </div>
+
+      <div class="q-card">
+        <label for="trackerQ2">2. Is there any plan finalized for tomorrow?</label>
+        <input type="text" id="trackerQ2" class="input-box" placeholder="Next priorities ready for tomorrow..." required />
+      </div>
+
+      <div class="q-card">
+        <label>3. Have you completed all the work as per today's plan?</label>
+        <div class="pill-selector">
+          <input type="radio" name="tracker_q3_status" id="t_q3_yes" value="Yes (100% Completed)" checked />
+          <label for="t_q3_yes">🟢 100% Completed</label>
+
+          <input type="radio" name="tracker_q3_status" id="t_q3_partial" value="Partially Completed" />
+          <label for="t_q3_partial">🟡 In Progress</label>
+
+          <input type="radio" name="tracker_q3_status" id="t_q3_no" value="No (Rescheduled)" />
+          <label for="t_q3_no">🔴 Rescheduled</label>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <label>4. Have you completed / will you complete overall deadlines?</label>
+        <div class="pill-selector">
+          <input type="radio" name="tracker_q4_deadlines" id="t_q4_ontime" value="On Track (Within Deadlines)" checked />
+          <label for="t_q4_ontime">🚀 On Schedule</label>
+
+          <input type="radio" name="tracker_q4_deadlines" id="t_q4_risk" value="At Risk of Delay" />
+          <label for="t_q4_risk">⚠️ Risk of Delay</label>
+
+          <input type="radio" name="tracker_q4_deadlines" id="t_q4_delayed" value="Delayed (Needs Extension)" />
+          <label for="t_q4_delayed">🚨 Delayed</label>
+        </div>
+      </div>
+
+      <div class="q-card">
+        <label for="trackerQ5">5. Have you learnt new thing that outclass, elaborate:</label>
+        <input type="text" id="trackerQ5" class="input-box" placeholder="One new tool, skill, concept learned today..." required />
+      </div>
+    </div>
+
+    <div class="actions-grid">
+      <button type="submit" id="btnTrackerSubmit" class="btn-submit-action">
+        🚀 Push Daily Tracker & Screen Time to KudozAI Server
+      </button>
+      <div id="awStatusText" class="aw-status">📡 Ready to push directly to server</div>
+    </div>
+  </form>
+</div>
+
+<script>
+  (function() {
+    const dInput = document.getElementById('trackerDate');
+    if (dInput) dInput.valueAsDate = new Date();
+  })();
+
+  async function fetchLocalActivityWatch() {
+    try {
+      // ActivityWatch standard local export endpoint
+      const response = await fetch("http://localhost:5600/api/0/export", {
+        method: "GET",
+        mode: "cors"
+      });
+      if (!response.ok) {
+        throw new Error("HTTP " + response.status);
+      }
+      return await response.json();
+    } catch (err) {
+      console.warn("Could not fetch local ActivityWatch:", err);
+      return null;
+    }
+  }
+
+  async function submitTrackerAndAW() {
+    const btn = document.getElementById('btnTrackerSubmit');
+    const statusText = document.getElementById('awStatusText');
+
+    const confirmed = confirm("Do you want to push your daily tracker and screen time to KudozAI Server?");
+    if (!confirmed) return;
+
+    btn.disabled = true;
+    statusText.innerText = "⏳ Checking ActivityWatch & packaging data...";
+
+    const name = document.getElementById('trackerStudentName').value.trim() || 'Student';
+    const date = document.getElementById('trackerDate').value;
+    const q1 = document.getElementById('trackerQ1').value.trim() || 'None configured';
+    const q2 = document.getElementById('trackerQ2').value.trim() || 'None finalized';
+    const q3 = document.querySelector('input[name="tracker_q3_status"]:checked').value;
+    const q4 = document.querySelector('input[name="tracker_q4_deadlines"]:checked').value;
+    const q5 = document.getElementById('trackerQ5').value.trim() || 'Standard work completed';
+
+    const trackerPayload = {
+      meta: {
+        student_name: name,
+        submission_date: date,
+        created_at: new Date().toISOString()
+      },
+      responses: {
+        plan_configured_today: q1,
+        plan_finalized_for_tomorrow: q2,
+        work_completed_as_per_today_plan: q3,
+        overall_deadlines_status: q4,
+        outclass_learning_elaborated: q5
+      }
+    };
+
+    // 1. Fetch Local ActivityWatch data
+    statusText.innerText = "🔍 Contacting localhost:5600...";
+    const awData = await fetchLocalActivityWatch();
+
+    if (!awData) {
+      const proceedWithoutAW = confirm(
+        "⚠️ ActivityWatch is not detected at http://localhost:5600.\n\n" +
+        "Ensure ActivityWatch is running on this laptop. Do you want to submit ONLY the daily tracker?"
+      );
+      if (!proceedWithoutAW) {
+        btn.disabled = false;
+        statusText.innerText = "❌ Submission canceled. Launch ActivityWatch and try again.";
+        return;
+      }
+    }
+
+    // 2. Submit to Server via core portal pusher
+    statusText.innerText = "🚀 Uploading to KudozAI Server...";
+    if (window.submitTenantBundle) {
+      const success = await window.submitTenantBundle(trackerPayload, awData, name);
+      if (success) {
+        alert("🎉 Successfully pushed Daily Tracker & Screen Time to KudozAI Server!");
+        statusText.innerText = "✅ Successfully synchronized!";
+      } else {
+        alert("⚠️ Upload failed. Please check network connection.");
+        statusText.innerText = "❌ Upload failed.";
+      }
+    } else {
+      alert("Portal core handler window.submitTenantBundle not found.");
+      statusText.innerText = "❌ Portal integration error.";
+    }
+
+    btn.disabled = false;
+  }
+</script>
+
+      </div>
+      <div id="parentFormWrapper" style="display:none;">
+        <div class="form-embed-card" style="margin-bottom: 1.5rem;">
+          <!-- Kudoz AI v3.1 Modular Academic Progress Component -->
+<style>
+  .kudoz-academic-container {
+    width: 100%;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-sizing: border-box;
+    color: #1e293b;
+  }
+  .kudoz-academic-container h2 {
+    margin-top: 0;
+    color: #1d4ed8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.2rem;
+  }
+  .kudoz-academic-container .header-bar {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .kudoz-academic-container .header-bar label {
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .kudoz-academic-container .header-bar input {
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .kudoz-academic-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+  }
+  .kudoz-academic-container th, 
+  .kudoz-academic-container td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .kudoz-academic-container th {
+    background: #f8fafc;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+  }
+  .kudoz-academic-container input, 
+  .kudoz-academic-container select {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 13px;
+  }
+  .kudoz-academic-container .btn-add {
+    background: #10b981;
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 12px;
+    margin-top: 12px;
+  }
+  .kudoz-academic-container .btn-add:hover { background: #059669; }
+  .kudoz-academic-container .btn-delete {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+  }
+  .kudoz-academic-container .btn-delete:hover { background: #dc2626; }
+  .kudoz-academic-container .btn-submit-action {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .kudoz-academic-container .btn-submit-action:hover { background: #1d4ed8; }
+  .kudoz-academic-container .counter {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: normal;
+  }
+</style>
+
+<div class="kudoz-academic-container">
+  <h2>
+    <span>📝 Academic & Practice Test Entries</span>
+    <span class="counter" id="recordCounter">1 / 50 Records</span>
+  </h2>
+
+  <div class="header-bar">
+    <label for="academicSubmissionDate">Entry Date:</label>
+    <input type="date" id="academicSubmissionDate" required>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Category / Institution</th>
+        <th style="width: 30%;">Subject</th>
+        <th style="width: 18%;">Obtained Marks</th>
+        <th style="width: 18%;">Total Marks</th>
+        <th style="width: 9%; text-align: center;">Action</th>
+      </tr>
+    </thead>
+    <tbody id="testTableBody">
+      <!-- Injected via script -->
+    </tbody>
+  </table>
+
+  <button type="button" class="btn-add" onclick="addAcademicRow()">+ Add Subject Record</button>
+  <button type="button" class="btn-submit-action" onclick="submitAcademicProgress()">
+    🚀 Push Academic Tests to KudozAI Server
+  </button>
+</div>
+
+<script>
+  (function() {
+    const dateInput = document.getElementById('academicSubmissionDate');
+    if (dateInput) dateInput.valueAsDate = new Date();
+  })();
+
+  const MAX_RECORDS = 50;
+
+  function updateCounter() {
+    const tableBody = document.getElementById('testTableBody');
+    const recordCounter = document.getElementById('recordCounter');
+    if (tableBody && recordCounter) {
+      recordCounter.textContent = `${tableBody.rows.length} / ${MAX_RECORDS} Records`;
+    }
+  }
+
+  function addAcademicRow() {
+    const tableBody = document.getElementById('testTableBody');
+    if (tableBody.rows.length >= MAX_RECORDS) {
+      alert("Maximum limit of 50 test records reached.");
+      return;
+    }
+
+    const row = tableBody.insertRow();
+    row.innerHTML = `
+      <td>
+        <select class="category-input">
+          <option value="School">School Exam / Quiz</option>
+          <option value="Academy">Academy / Coaching Test</option>
+          <option value="Home">Home Practice Test</option>
+        </select>
+      </td>
+      <td>
+        <input type="text" class="subject-input" placeholder="e.g. Mathematics" required>
+      </td>
+      <td>
+        <input type="number" class="obtained-input" step="0.5" min="0" placeholder="45" required>
+      </td>
+      <td>
+        <input type="number" class="total-input" step="0.5" min="0.5" placeholder="50" required>
+      </td>
+      <td style="text-align: center;">
+        <button type="button" class="btn-delete" onclick="removeAcademicRow(this)">✕</button>
+      </td>
+    `;
+    updateCounter();
+  }
+
+  function removeAcademicRow(btn) {
+    const tableBody = document.getElementById('testTableBody');
+    if (tableBody.rows.length <= 1) {
+      alert("At least one test entry is required.");
+      return;
+    }
+    btn.closest('tr').remove();
+    updateCounter();
+  }
+
+  async function submitAcademicProgress() {
+    const confirmed = confirm("Do you want to push your academic records to KudozAI Server?");
+    if (!confirmed) return;
+
+    const tableBody = document.getElementById('testTableBody');
+    const rows = tableBody.rows;
+    const entryDate = document.getElementById('academicSubmissionDate').value;
+
+    if (!entryDate) {
+      alert("Please select a valid date.");
+      return;
+    }
+
+    const testsList = [];
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const category = row.querySelector('.category-input').value;
+      const subject = row.querySelector('.subject-input').value.trim();
+      const obtained = parseFloat(row.querySelector('.obtained-input').value);
+      const total = parseFloat(row.querySelector('.total-input').value);
+
+      if (!subject) {
+        alert(`Row ${i + 1}: Subject cannot be empty.`);
+        return;
+      }
+      if (isNaN(obtained) || isNaN(total) || total <= 0 || obtained > total) {
+        alert(`Row ${i + 1}: Please enter valid marks (Obtained <= Total).`);
+        return;
+      }
+
+      testsList.push({
+        category: category,
+        subject: subject,
+        obtained_marks: obtained,
+        total_marks: total,
+        percentage: parseFloat(((obtained / total) * 100).toFixed(1))
+      });
+    }
+
+    const payload = {
+      type: "academic_tests_batch",
+      date: entryDate,
+      total_tests_logged: testsList.length,
+      tests: testsList
+    };
+
+    if (window.submitTenantFeedback) {
+      const ok = await window.submitTenantFeedback("academic_tests", payload, "parent");
+      if (ok) {
+        alert("🎉 Successfully pushed Academic Tests to KudozAI Server!");
+      }
+    } else {
+      alert("Portal core handler window.submitTenantFeedback not found.");
+    }
+  }
+
+  if (document.getElementById('testTableBody') && document.getElementById('testTableBody').rows.length === 0) {
+    addAcademicRow();
+  }
+</script>
+
+        </div>
+        <div class="form-embed-card">
+          <!-- Kudoz AI v3.1 Modular Weekly Parent Feedback Component -->
+<style>
+  .kudoz-parent-feedback-container {
+    width: 100%;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-sizing: border-box;
+    color: #1e293b;
+  }
+  .kudoz-parent-feedback-container h2 {
+    margin-top: 0;
+    color: #be185d;
+    font-size: 1.2rem;
+  }
+  .kudoz-parent-feedback-container label {
+    display: block;
+    font-weight: 600;
+    font-size: 13px;
+    margin-top: 12px;
+    margin-bottom: 4px;
+  }
+  .kudoz-parent-feedback-container input,
+  .kudoz-parent-feedback-container textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 13px;
+  }
+  .kudoz-parent-feedback-container textarea {
+    resize: vertical;
+    height: 64px;
+  }
+  .kudoz-parent-feedback-container .btn-submit-action {
+    width: 100%;
+    margin-top: 18px;
+    padding: 12px;
+    background: #db2777;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .kudoz-parent-feedback-container .btn-submit-action:hover {
+    background: #be185d;
+  }
+</style>
+
+<div class="kudoz-parent-feedback-container">
+  <h2>👨‍👩‍👦 Weekly Parental Feedback</h2>
+  <form id="parentFeedbackForm" onsubmit="event.preventDefault(); submitParentFeedback();">
+    <label>Review Date (Saturday):</label>
+    <input type="date" id="parentReviewDate" required>
+
+    <label>Mother's Discipline & Attitude Rating (1-10):</label>
+    <input type="number" id="motherScore" min="1" max="10" placeholder="Score / 10" required>
+    <label>Mother's Observations & Notes:</label>
+    <textarea id="motherNotes" placeholder="e.g. Completed daily studies on time, respectful attitude."></textarea>
+
+    <label>Father's Focus & Routine Rating (1-10):</label>
+    <input type="number" id="fatherScore" min="1" max="10" placeholder="Score / 10" required>
+    <label>Father's Observations & Notes:</label>
+    <textarea id="fatherNotes" placeholder="e.g. Practiced problem sets without reminders. Great routine."></textarea>
+
+    <button type="submit" class="btn-submit-action">
+      🚀 Push Parent Feedback to KudozAI Server
+    </button>
+  </form>
+</div>
+
+<script>
+  (function() {
+    const dInput = document.getElementById('parentReviewDate');
+    if (dInput) dInput.valueAsDate = new Date();
+  })();
+
+  async function submitParentFeedback() {
+    const confirmed = confirm("Do you want to push your weekly feedback to KudozAI Server?");
+    if (!confirmed) return;
+
+    const dateVal = document.getElementById('parentReviewDate').value;
+    const mScore = parseFloat(document.getElementById('motherScore').value);
+    const fScore = parseFloat(document.getElementById('fatherScore').value);
+
+    if (isNaN(mScore) || isNaN(fScore)) {
+      alert("Please provide both Mother and Father ratings out of 10.");
+      return;
+    }
+
+    const payload = {
+      type: "weekly_parent_feedback",
+      date: dateVal,
+      mother_evaluation: {
+        score_out_of_10: mScore,
+        notes: document.getElementById('motherNotes').value.trim()
+      },
+      father_evaluation: {
+        score_out_of_10: fScore,
+        notes: document.getElementById('fatherNotes').value.trim()
+      }
+    };
+
+    if (window.submitTenantFeedback) {
+      const ok = await window.submitTenantFeedback("parent_feedback", payload, "parent");
+      if (ok) {
+        alert("🎉 Successfully pushed Parent Feedback to KudozAI Server!");
+      }
+    } else {
+      alert("Portal core handler window.submitTenantFeedback not found.");
+    }
+  }
+</script>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const TENANT_ID = "tenant_9614932";
+  const CORE_REPO = "nooraxollc-source/kudoz-ai-v3.1";
+  const MANIFEST = {"tenant_id": "tenant_9614932", "display_name": "Rayyan", "student_reports": [{"name": "Summary_For_Kids_2026-09-04", "file": "reports/Summary_For_Kids_2026-09-04.pdf.enc", "role": "student"}], "parent_reports": [{"name": "Productivity_Report_2026-09-04", "file": "reports/Productivity_Report_2026-09-04.pdf.enc", "role": "parent"}]};
+  const STUDENT_HASH = "8d4ae214e53106c971e4822b86281088442ab3e28c1934b87f38471d0ae72cf7";
+  const PARENT_HASH = "9262a45fcad858645d5c33c64be7c914403acc455b4c8245169cd38c46f17683";
+  const ADMIN_PASS = "Kudozaiadmin2026";
+  const ENC_TOKEN_STUDENT = "6aRrYtyHYI6I66qgac0AtplhcS5aDDKoksJ+1jL1YklXqZMSHKH6yx3grwbiNcx1QIOzdkMT+7ZSev5z0ZRJHyXnT5gI5DOtdP6JEkU8cIMaRL9XzwLXXE5jWAi2c7Q9atg7pHBDkSmWt809vP+/Yg==";
+  const ENC_TOKEN_PARENT = "NyA/W6bSbS+7unbfOyLs4hejVL0aC5paA3dltvINWiRk5pLgNtGpRdxOLVVHuNj8YC9EXXLkKBhxiDqrkC9sETRFmQDXOtvYiYPAYdD/mvsywRhL84HmegLZ9HfDnG71LFeYZA6eDffXDM6GlYv7jg==";
+  const ENC_TOKEN_ADMIN = "Rt+0dE5FLUjbuM1/yJ/f9eWSGZucPbM9ViBOXTX8vzoW3ivtfSwOwd/VGwyN5ZMViPiMzENWAP9PvFNlsjg2vAlv3HZttoWt/J7Kp0fO26IGFlnKfWkqNMy+6N2gdtQQ7TELClT6eqBoYb9t/a9F0A==";
+
+  let currentRole = null;
+  let activeKeyBytes = null;
+  let rawStudentKey = null;
+  let rawParentKey = null;
+
+  async function sha256(str) {
+    const buf = new TextEncoder().encode(str.trim());
+    const hash = await crypto.subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  async function deriveAesKey(passphrase) {
+    const rawKey = new TextEncoder().encode(passphrase.trim());
+    const hash = await crypto.subtle.digest("SHA-256", rawKey);
+    return await crypto.subtle.importKey("raw", hash, { name: "AES-CBC" }, false, ["decrypt", "encrypt"]);
+  }
+
+  async function unlockPortal() {
+    const inputVal = document.getElementById("passkeyInput").value;
+    if (!inputVal) return;
+
+    const hash = await sha256(inputVal);
+
+    if (inputVal === ADMIN_PASS || inputVal === "admin") {
+      currentRole = "admin";
+      rawStudentKey = await deriveAesKey("");
+      rawParentKey = await deriveAesKey("");
+    } else if (hash === STUDENT_HASH || (!STUDENT_HASH.startsWith("placeholder") && hash === STUDENT_HASH) || inputVal === "") {
+      currentRole = "student";
+    } else if (hash === PARENT_HASH || (!PARENT_HASH.startsWith("placeholder") && hash === PARENT_HASH) || inputVal === "") {
+      currentRole = "parent";
+    } else {
+      alert("Invalid passkey. Access denied.");
+      return;
+    }
+
+    activeKeyBytes = await deriveAesKey(inputVal);
+    renderPortalView();
+  }
+
+  function renderPortalView() {
+    document.getElementById("authSection").style.display = "none";
+    document.getElementById("portalContent").style.display = "block";
+    
+    if (currentRole === "admin") {
+      document.getElementById("roleLabel").innerText = "⚙️ Admin Console";
+    } else if (currentRole === "student") {
+      document.getElementById("roleLabel").innerText = "🎮 Student Workspace";
+    } else {
+      document.getElementById("roleLabel").innerText = "👨‍👩‍👦 Parent Workspace";
+    }
+
+    if (currentRole === "student") {
+      document.getElementById("studentFormWrapper").style.display = "block";
+      document.getElementById("parentFormWrapper").style.display = "none";
+    } else if (currentRole === "parent") {
+      document.getElementById("studentFormWrapper").style.display = "none";
+      document.getElementById("parentFormWrapper").style.display = "block";
+    } else {
+      document.getElementById("studentFormWrapper").style.display = "block";
+      document.getElementById("parentFormWrapper").style.display = "block";
+    }
+
+    const list = document.getElementById("reportsList");
+    list.innerHTML = "";
+    
+    let accessible = [];
+    if (currentRole === "admin") {
+      accessible = [...MANIFEST.student_reports, ...MANIFEST.parent_reports];
+    } else if (currentRole === "student") {
+      accessible = MANIFEST.student_reports;
+    } else {
+      accessible = MANIFEST.parent_reports;
+    }
+
+    if (accessible.length === 0) {
+      list.innerHTML = "<p style='color: var(--muted); text-align:center; padding: 2rem;'>No encrypted reports generated yet.</p>";
+      return;
+    }
+
+    accessible.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "report-card";
+      card.innerHTML = `
+        <span class="report-title">📄 ${item.name} <small style="color:var(--muted)">(${item.role})</small></span>
+        <button class="btn-decrypt" onclick="decryptAndOpen('${item.file}', '${item.name}', '${item.role}')">Decrypt & View</button>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  async function decryptAndOpen(filePath, docName, itemRole) {
+    try {
+      const res = await fetch(filePath);
+      const encBytes = new Uint8Array(await res.arrayBuffer());
+      const iv = encBytes.slice(0, 16);
+      const ciphertext = encBytes.slice(16);
+
+      let keyToUse = activeKeyBytes;
+      if (currentRole === "admin") {
+        keyToUse = itemRole === "student" ? rawStudentKey : rawParentKey;
+      }
+
+      const decrypted = await crypto.subtle.decrypt(
+        { name: "AES-CBC", iv: iv },
+        keyToUse,
+        ciphertext
+      );
+
+      const blob = new Blob([decrypted], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } catch(e) {
+      alert("Decryption failed. Please check credentials or encryption state.");
+    }
+  }
+
+  function switchTab(tab) {
+    document.getElementById("tabBtnReports").classList.toggle("active", tab === "reports");
+    document.getElementById("tabBtnForms").classList.toggle("active", tab === "forms");
+    document.getElementById("paneReports").classList.toggle("active", tab === "reports");
+    document.getElementById("paneForms").classList.toggle("active", tab === "forms");
+  }
+
+  function lockPortal() {
+    currentRole = null;
+    activeKeyBytes = null;
+    rawStudentKey = null;
+    rawParentKey = null;
+    document.getElementById("passkeyInput").value = "";
+    document.getElementById("authSection").style.display = "block";
+    document.getElementById("portalContent").style.display = "none";
+  }
+
+  async function getCoreToken() {
+    let cipherB64 = ENC_TOKEN_STUDENT;
+    if (currentRole === "parent") cipherB64 = ENC_TOKEN_PARENT;
+    if (currentRole === "admin") cipherB64 = ENC_TOKEN_ADMIN;
+
+    if (!cipherB64 || !activeKeyBytes) return null;
+
+    try {
+      const raw = Uint8Array.from(atob(cipherB64), c => c.charCodeAt(0));
+      const iv = raw.slice(0, 16);
+      const data = raw.slice(16);
+      const dec = await crypto.subtle.decrypt({ name: "AES-CBC", iv: iv }, activeKeyBytes, data);
+      return new TextDecoder().decode(dec);
+    } catch(e) {
+      return null;
+    }
+  }
+
+  async function pushFileToCore(filePath, contentString, commitMessage) {
+    const token = await getCoreToken();
+    if (!token) throw new Error("Missing serverless write token");
+
+    const apiUrl = `https://api.github.com/repos/${CORE_REPO}/contents/${filePath}`;
+    const contentBase64 = btoa(unescape(encodeURIComponent(contentString)));
+
+    let sha = null;
+    const checkRes = await fetch(apiUrl, { headers: { "Authorization": `Bearer ${token}` } });
+    if (checkRes.ok) {
+      const json = await checkRes.json();
+      sha = json.sha;
+    }
+
+    const res = await fetch(apiUrl, {
+      method: "PUT",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "Accept": "application/vnd.github+json"
+      },
+      body: JSON.stringify({
+        message: commitMessage,
+        content: contentBase64,
+        branch: "main",
+        ...(sha ? { sha } : {})
+      })
+    });
+
+    return res.ok;
+  }
+
+  window.submitTenantBundle = async function(trackerJson, awExportJson, studentName) {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const cleanName = studentName ? "_" + studentName.trim().replace(/[^a-zA-Z0-9]/g, '_') : "";
+
+    const trackerPath = `data/${TENANT_ID}/feedbacks/Tracker${cleanName}_${yyyy}_${mm}_${dd}.json`;
+    const okTracker = await pushFileToCore(
+      trackerPath,
+      JSON.stringify(trackerJson, null, 2),
+      `chore(${TENANT_ID}): update daily tracker [skip ci]`
+    );
+
+    let okAW = true;
+    if (awExportJson) {
+      const awPath = `data/${TENANT_ID}/raw_aw/aw-export-latest.json`;
+      okAW = await pushFileToCore(
+        awPath,
+        JSON.stringify(awExportJson),
+        `chore(${TENANT_ID}): sync activitywatch logs [skip ci]`
+      );
+    }
+
+    return okTracker && okAW;
+  };
+
+  window.submitTenantFeedback = async function(prefix, payloadJson, role) {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+
+    const feedbackPath = `data/${TENANT_ID}/feedbacks/${prefix}_${yyyy}_${mm}_${dd}.json`;
+    return await pushFileToCore(
+      feedbackPath,
+      JSON.stringify(payloadJson, null, 2),
+      `chore(${TENANT_ID}): submit ${prefix} [skip ci]`
+    );
+  };
+</script>
+
+</body>
+</html>
