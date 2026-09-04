@@ -7,132 +7,369 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --primary: #3b82f6;
-      --primary-hover: #2563eb;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --bg: #0b0f19;
-      --surface: #111827;
-      --surface-card: #1f2937;
-      --border: #374151;
-      --text: #f9fafb;
-      --muted: #9ca3af;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem; }
-    .app-container { width: 100%; max-width: 1020px; }
-    
-    .portal-header {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.25rem 1.75rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-    }
-    .brand-group { display: flex; align-items: center; gap: 0.75rem; }
-    .brand-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #2563eb, #7c3aed); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-    .brand-title { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px; color: #fff; }
-    .brand-sub { font-size: 0.78rem; color: var(--muted); }
-    
-    .auth-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 2.25rem;
-      text-align: center;
-      max-width: 420px;
-      margin: 3rem auto;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
-    .auth-box input {
-      width: 100%;
-      padding: 0.8rem 1rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #0b0f19;
-      color: #fff;
-      font-size: 0.95rem;
-      margin: 1.2rem 0;
-      outline: none;
-    }
-    .auth-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
-    .btn-auth { width: 100%; padding: 0.8rem; border-radius: 8px; background: var(--primary); color: #fff; font-weight: 700; border: none; cursor: pointer; transition: 0.15s; }
-    .btn-auth:hover { background: var(--primary-hover); }
-    
-    .portal-content { display: none; }
-    .role-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.75rem 1.25rem;
-      margin-bottom: 1.5rem;
-    }
-    .role-badge { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; padding: 0.35rem 0.75rem; border-radius: 20px; background: #1e3a8a; color: #bfdbfe; }
-    .btn-lock { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.4rem 0.85rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
-    .btn-lock:hover { background: var(--surface-card); color: #fff; }
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --bg: #0b0f19;
+  --surface: #111827;
+  --surface-card: #1f2937;
+  --border: #374151;
+  --text: #f9fafb;
+  --muted: #9ca3af;
+}
 
-    .metrics-banner {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .metric-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-    }
-    .metric-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 0.35rem; }
-    .metric-val { font-size: 1.15rem; font-weight: 800; color: #fff; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
 
-    .tabs-nav { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
-    .tab-btn { background: transparent; border: none; color: var(--muted); padding: 0.75rem 1.25rem; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; font-size: 0.88rem; }
-    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-    .tab-pane { display: none; }
-    .tab-pane.active { display: block; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem;
+}
 
-    .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
-    @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr; } }
-    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
-    .chart-card h4 { font-size: 0.85rem; font-weight: 700; color: var(--muted); margin-bottom: 1rem; text-transform: uppercase; }
+.app-container {
+  width: 100%;
+  max-width: 1020px;
+}
 
-    .reports-list { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-bottom: 2rem; }
-    .report-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1rem 1.25rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: border-color 0.2s;
-    }
-    .report-card:hover { border-color: var(--primary); }
-    .report-meta { display: flex; align-items: center; gap: 0.75rem; }
-    .report-icon { font-size: 1.4rem; }
-    .report-name { font-weight: 700; font-size: 0.95rem; color: #fff; }
-    .report-sub { font-size: 0.78rem; color: var(--muted); }
-    .btn-decrypt { background: var(--primary); color: #fff; border: none; padding: 0.55rem 1.1rem; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.82rem; }
-    .btn-decrypt:hover { background: var(--primary-hover); }
+.portal-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
 
-    .admin-matrix { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
-    .admin-matrix h3 { font-size: 1rem; font-weight: 800; margin-bottom: 1rem; color: #fff; }
-    .compliance-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-    .compliance-table th, .compliance-table td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
-    .compliance-table th { color: var(--muted); font-weight: 700; background: var(--surface-card); }
-    .badge-check { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 700; }
-    .badge-ok { background: #064e3b; color: #6ee7b7; }
-    .badge-no { background: #7f1d1d; color: #fca5a5; }
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
 
-    .form-embed-card { background: #ffffff; border-radius: 12px; overflow: hidden; margin-top: 1rem; }
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.brand-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #fff;
+}
+
+.brand-sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.auth-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 2.25rem;
+  text-align: center;
+  max-width: 420px;
+  margin: 3rem auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.auth-box input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0b0f19;
+  color: #fff;
+  font-size: 0.95rem;
+  margin: 1.2rem 0;
+  outline: none;
+}
+
+.auth-box input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.btn-auth {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.btn-auth:hover {
+  background: var(--primary-hover);
+}
+
+.portal-content {
+  display: none;
+}
+
+.role-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.role-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  background: #1e3a8a;
+  color: #bfdbfe;
+}
+
+.btn-lock {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.btn-lock:hover {
+  background: var(--surface-card);
+  color: #fff;
+}
+
+.metrics-banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+.metric-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+}
+
+.metric-val {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.tabs-nav {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  padding: 0.75rem 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-size: 0.88rem;
+}
+
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.chart-card h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.reports-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.report-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: border-color 0.2s;
+}
+
+.report-card:hover {
+  border-color: var(--primary);
+}
+
+.report-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.report-icon {
+  font-size: 1.4rem;
+}
+
+.report-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.report-sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.btn-decrypt {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 0.55rem 1.1rem;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.btn-decrypt:hover {
+  background: var(--primary-hover);
+}
+
+.admin-matrix {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-matrix h3 {
+  font-size: 1rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.compliance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.compliance-table th,
+.compliance-table td {
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.compliance-table th {
+  color: var(--muted);
+  font-weight: 700;
+  background: var(--surface-card);
+}
+
+.badge-check {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.badge-ok {
+  background: #064e3b;
+  color: #6ee7b7;
+}
+
+.badge-no {
+  background: #7f1d1d;
+  color: #fca5a5;
+}
+
+.form-embed-card {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
   </style>
 </head>
 <body>
@@ -1114,360 +1351,355 @@
 </div>
 
 <script>
-  window.MANIFEST = {"tenant_id": "tenant_9614932", "display_name": "Rayyan", "aw_last_synced": "2026-09-04T13:08:14.732989+00:00", "chart_days": ["2026-08-29", "2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04"], "chart_hours": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.07], "top_apps_labels": ["chrome.exe", "LockApp.exe", "WinRAR.exe", "explorer.exe", "unknown"], "top_apps_values": [0.59, 0.48, 0.0, 0.0, 0.0], "compliance_grid": {"2026-08-29": {"tracker": false, "academic": false, "parent": false}, "2026-08-30": {"tracker": false, "academic": false, "parent": false}, "2026-08-31": {"tracker": false, "academic": false, "parent": false}, "2026-09-01": {"tracker": false, "academic": false, "parent": false}, "2026-09-02": {"tracker": false, "academic": false, "parent": false}, "2026-09-03": {"tracker": false, "academic": false, "parent": false}, "2026-09-04": {"tracker": true, "academic": true, "parent": true}}, "student_reports": [{"name": "Summary_For_Kids_2026-09-04", "file": "reports/Summary_For_Kids_2026-09-04.pdf.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.student.enc", "role": "student"}], "parent_reports": [{"name": "Productivity_Report_2026-09-04", "file": "reports/Productivity_Report_2026-09-04.pdf.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.parent.enc", "role": "parent"}]};
-  const TENANT_ID = "tenant_9614932";
-  const CORE_REPO = "nooraxollc-source/kudoz-ai-v3.1";
-  const STUDENT_HASH = "8d4ae214e53106c971e4822b86281088442ab3e28c1934b87f38471d0ae72cf7";
-  const PARENT_HASH = "9262a45fcad858645d5c33c64be7c914403acc455b4c8245169cd38c46f17683";
-  const ADMIN_PASS = "Kudozaiadmin2026";
-  const ENC_TOKEN_STUDENT = "b9pDsJ7eqyhBhzuVIR2phDQxeXOPJuIur2bV6ZMdChv1KMVzuHuDQK+UTu6262Yvucs6O0Mgu38nwFg2oajWB2t1NeTHEvalaqw2z86a22WWFP8Y10iliISu4N33JlKoCy/0iMD8Zx6CmZkKNl6LnQ==";
-  const ENC_TOKEN_PARENT = "qftqQ8Fmj33redDACroYPkA/ZoqEeNXaOEPI7Pj3GRG6/ovSJcyU5W6ki5FZns6OanNrOEwjP015GnCxYw5fBy1BeGQ9iq9PeFaJ/7a9l/pAg8n/9o5Ki4cbU21rVackSTxLOYwsjhoeWZ9Se84YNA==";
-  const ENC_TOKEN_ADMIN = "n0X0sL2Y9WLbbBi/4C83xLXH922xgNCztQlQqkFIks66NEa2j5knucXQLocgza+LUz643LYboaX0m8reRAGM8WOf4LoiXPIh8if4qEpX1AHLCT6J7O9LbQPgQlxk8/W1zwpjIZh1woWV5YlL4jrpuw==";
-
+  window.MANIFEST = {"tenant_id": "tenant_9614932", "display_name": "Rayyan", "aw_last_synced": "2026-09-04T14:35:14.278521+00:00", "chart_days": ["2026-08-29", "2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04"], "chart_hours": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.07], "top_apps_labels": ["chrome.exe", "LockApp.exe", "WinRAR.exe", "explorer.exe", "unknown"], "top_apps_values": [0.59, 0.48, 0.0, 0.0, 0.0], "compliance_grid": {"2026-08-29": {"tracker": false, "academic": false, "parent": false}, "2026-08-30": {"tracker": false, "academic": false, "parent": false}, "2026-08-31": {"tracker": false, "academic": false, "parent": false}, "2026-09-01": {"tracker": false, "academic": false, "parent": false}, "2026-09-02": {"tracker": false, "academic": false, "parent": false}, "2026-09-03": {"tracker": false, "academic": false, "parent": false}, "2026-09-04": {"tracker": true, "academic": true, "parent": true}}, "student_reports": [{"name": "Summary_For_Kids_2026-09-04", "file": "reports/Summary_For_Kids_2026-09-04.pdf.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.student.enc", "role": "student"}], "parent_reports": [{"name": "Productivity_Report_2026-09-04", "file": "reports/Productivity_Report_2026-09-04.pdf.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.parent.enc", "role": "parent"}]};
+  const ENV_CONFIG = {"tenant_id": "tenant_9614932", "core_repo": "nooraxollc-source/kudoz-ai-v3.1", "student_hash": "8d4ae214e53106c971e4822b86281088442ab3e28c1934b87f38471d0ae72cf7", "parent_hash": "9262a45fcad858645d5c33c64be7c914403acc455b4c8245169cd38c46f17683", "admin_pass": "Kudozaiadmin2026", "token_student": "FW5KACqTPEuYFX6GljRLxhdhmnP5mohSRRXX/rV7cmhUfphEICwfs1WalAMWSqp6kygzeV3Z43+v3d95/FgxI1775smt8QyZc+2SmUJd2JAoShfLsxaS1ly4/h4zIZKheF1QpyHKKrhCIL88LA1c7A==", "token_parent": "SXeUlSir1Fn8dRjCQnPumRM8xXJrcOU7c2q3NZWlVEhqUEXEeNuKa6LoROCOLEl82hMoaxGP+omDdVtz/bYGGeX4YoHzzkN3sWGscGc+DO9DrGhXNZmjxRlvLGWCIWbSD4lTw9sgAvFLWgz29rXwZw==", "token_admin": "jxdsFxNqin8CEgWumP7HOaf0NKRiALjT+jFMox9+OVY7WptSt+Ag+ak4gtoIDFjkmS6Fn+lslSP7KhBXDgu6J4PV2YakP7IxYqj+svvCIqoijAFc4ATzyprdSMAlalP6crTfFQsoOgXN5+FavuObpA=="};
+</script>
+<script>
   let currentRole = null;
-  let activeKeyBytes = null;
-  let rawStudentKey = null;
-  let rawParentKey = null;
-  let chartInstances = [];
+let activeKeyBytes = null;
+let rawStudentKey = null;
+let rawParentKey = null;
+let chartInstances = [];
 
-  function formatToClientTime(isoUtcString) {
-    if (!isoUtcString) return null;
-    const safeUtc = (isoUtcString.endsWith("Z") || isoUtcString.includes("+")) 
-      ? isoUtcString 
-      : isoUtcString.replace(" ", "T") + "Z";
-    const dateObj = new Date(safeUtc);
-    if (isNaN(dateObj.getTime())) return isoUtcString;
+function formatToClientTime(isoUtcString) {
+  if (!isoUtcString) return null;
+  const safeUtc = (isoUtcString.endsWith("Z") || isoUtcString.includes("+"))
+    ? isoUtcString
+    : isoUtcString.replace(" ", "T") + "Z";
+  const dateObj = new Date(safeUtc);
+  if (isNaN(dateObj.getTime())) return isoUtcString;
 
-    return dateObj.toLocaleString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true
-    });
+  return dateObj.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
+  });
+}
+
+async function sha256Hex(str) {
+  const buf = new TextEncoder().encode(str.trim());
+  const hash = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function deriveKeyFromHash(tenantId, passHash) {
+  const seed = new TextEncoder().encode(tenantId + ":" + passHash);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", seed);
+  return await crypto.subtle.importKey("raw", hashBuffer, { name: "AES-CBC" }, false, ["decrypt", "encrypt"]);
+}
+
+async function deriveKeyFromPlain(passphrase) {
+  const rawKey = new TextEncoder().encode(passphrase.trim());
+  const hash = await crypto.subtle.digest("SHA-256", rawKey);
+  return await crypto.subtle.importKey("raw", hash, { name: "AES-CBC" }, false, ["decrypt", "encrypt"]);
+}
+
+async function unlockPortal() {
+  const inputVal = document.getElementById("passkeyInput").value.trim();
+  if (!inputVal) return;
+
+  const inputHash = await sha256Hex(inputVal);
+
+  if (inputVal === ENV_CONFIG.admin_pass || inputVal === "admin") {
+    currentRole = "admin";
+    activeKeyBytes = await deriveKeyFromPlain(inputVal);
+    rawStudentKey = await deriveKeyFromHash(ENV_CONFIG.tenant_id, ENV_CONFIG.student_hash);
+    rawParentKey = await deriveKeyFromHash(ENV_CONFIG.tenant_id, ENV_CONFIG.parent_hash);
+  } else if (inputHash === ENV_CONFIG.student_hash || inputVal === "student") {
+    currentRole = "student";
+    activeKeyBytes = await deriveKeyFromHash(ENV_CONFIG.tenant_id, ENV_CONFIG.student_hash);
+  } else if (inputHash === ENV_CONFIG.parent_hash || inputVal === "parent") {
+    currentRole = "parent";
+    activeKeyBytes = await deriveKeyFromHash(ENV_CONFIG.tenant_id, ENV_CONFIG.parent_hash);
+  } else {
+    alert("Invalid passkey. Access denied.");
+    return;
   }
 
-  async function sha256Hex(str) {
-    const buf = new TextEncoder().encode(str.trim());
-    const hash = await crypto.subtle.digest("SHA-256", buf);
-    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  renderPortalView();
+}
+
+function renderPortalView() {
+  document.getElementById("authSection").style.display = "none";
+  document.getElementById("portalContent").style.display = "block";
+
+  const roleEl = document.getElementById("roleLabel");
+  const adminSec = document.getElementById("adminOverviewSection");
+
+  if (currentRole === "admin") {
+    roleEl.innerText = "⚙️ Admin Console";
+    roleEl.style.background = "#78350f";
+    roleEl.style.color = "#fef3c7";
+    adminSec.style.display = "block";
+    document.getElementById("studentFormWrapper").style.display = "block";
+    document.getElementById("parentFormWrapper").style.display = "block";
+    renderAdminMatrix();
+  } else if (currentRole === "student") {
+    roleEl.innerText = "🎮 Student Workspace";
+    roleEl.style.background = "#1e3a8a";
+    roleEl.style.color = "#bfdbfe";
+    adminSec.style.display = "none";
+    document.getElementById("studentFormWrapper").style.display = "block";
+    document.getElementById("parentFormWrapper").style.display = "none";
+  } else {
+    roleEl.innerText = "👨‍👩‍👦 Parent Workspace";
+    roleEl.style.background = "#831843";
+    roleEl.style.color = "#fbcfe8";
+    adminSec.style.display = "none";
+    document.getElementById("studentFormWrapper").style.display = "none";
+    document.getElementById("parentFormWrapper").style.display = "block";
   }
 
-  async function deriveKeyFromHash(tenantId, passHash) {
-    const seed = new TextEncoder().encode(tenantId + ":" + passHash);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", seed);
-    return await crypto.subtle.importKey("raw", hashBuffer, { name: "AES-CBC" }, false, ["decrypt", "encrypt"]);
+  const totalH = window.MANIFEST.chart_hours.reduce((a, b) => a + b, 0);
+  document.getElementById("metricTotalHours").innerText = totalH.toFixed(1) + " hrs";
+
+  const lastSync = window.MANIFEST.aw_last_synced;
+  const awEl = document.getElementById("metricAwStatus");
+  if (!lastSync) {
+    awEl.innerHTML = "<span style='color:var(--danger);'>⚠️ No Data Logged</span>";
+  } else {
+    const safeUtc = (lastSync.endsWith("Z") || lastSync.includes("+")) ? lastSync : lastSync.replace(" ", "T") + "Z";
+    const syncDate = new Date(safeUtc);
+    const now = new Date();
+    const isToday =
+      syncDate.getFullYear() === now.getFullYear() &&
+      syncDate.getMonth() === now.getMonth() &&
+      syncDate.getDate() === now.getDate();
+
+    const formatted = formatToClientTime(lastSync);
+    awEl.innerHTML = isToday
+      ? "<span style='color:var(--success);'>✅ " + formatted + "</span>"
+      : "<span style='color:var(--warning);'>⚠️ Outdated (" + formatted + ")</span>";
   }
 
-  async function deriveKeyFromPlain(passphrase) {
-    const rawKey = new TextEncoder().encode(passphrase.trim());
-    const hash = await crypto.subtle.digest("SHA-256", rawKey);
-    return await crypto.subtle.importKey("raw", hash, { name: "AES-CBC" }, false, ["decrypt", "encrypt"]);
+  renderReportsList();
+  initCharts();
+  if (typeof updateAWStatusBadge === "function") updateAWStatusBadge();
+}
+
+function renderAdminMatrix() {
+  const tbody = document.getElementById("adminComplianceBody");
+  tbody.innerHTML = "";
+  const grid = window.MANIFEST.compliance_grid;
+  const days = window.MANIFEST.chart_days;
+  const hours = window.MANIFEST.chart_hours;
+
+  days.slice().reverse().forEach((d) => {
+    const origIdx = days.indexOf(d);
+    const h = hours[origIdx];
+    const comp = grid[d] || { tracker: false, academic: false, parent: false };
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td><strong>${d}</strong></td>
+      <td>${h > 0 ? `<span class="badge-check badge-ok">${h}h Logged</span>` : `<span class="badge-check badge-no">0h</span>`}</td>
+      <td>${comp.tracker ? `<span class="badge-check badge-ok">✅ Submitted</span>` : `<span class="badge-check badge-no">❌ Missing</span>`}</td>
+      <td>${comp.academic ? `<span class="badge-check badge-ok">✅ Submitted</span>` : `<span class="badge-check badge-no">❌ None</span>`}</td>
+      <td>${comp.parent ? `<span class="badge-check badge-ok">✅ Submitted</span>` : `<span class="badge-check badge-no">❌ Missing</span>`}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function renderReportsList() {
+  const list = document.getElementById("reportsList");
+  list.innerHTML = "";
+  let accessible = [];
+  if (currentRole === "admin") {
+    accessible = [...window.MANIFEST.student_reports, ...window.MANIFEST.parent_reports];
+  } else if (currentRole === "student") {
+    accessible = window.MANIFEST.student_reports;
+  } else {
+    accessible = window.MANIFEST.parent_reports;
   }
 
-  async function unlockPortal() {
-    const inputVal = document.getElementById("passkeyInput").value.trim();
-    if (!inputVal) return;
+  document.getElementById("metricDeliverables").innerText = accessible.length + " Reports";
 
-    const inputHash = await sha256Hex(inputVal);
-
-    if (inputVal === ADMIN_PASS || inputVal === "admin") {
-      currentRole = "admin";
-      activeKeyBytes = await deriveKeyFromPlain(inputVal);
-      rawStudentKey = await deriveKeyFromHash(TENANT_ID, STUDENT_HASH);
-      rawParentKey = await deriveKeyFromHash(TENANT_ID, PARENT_HASH);
-    } else if (inputHash === STUDENT_HASH || inputVal === "student") {
-      currentRole = "student";
-      activeKeyBytes = await deriveKeyFromHash(TENANT_ID, STUDENT_HASH);
-    } else if (inputHash === PARENT_HASH || inputVal === "parent") {
-      currentRole = "parent";
-      activeKeyBytes = await deriveKeyFromHash(TENANT_ID, PARENT_HASH);
-    } else {
-      alert("Invalid passkey. Access denied.");
-      return;
-    }
-
-    renderPortalView();
+  if (accessible.length === 0) {
+    list.innerHTML = "<p style='color: var(--muted); text-align:center; padding: 2rem;'>No deliverables generated yet.</p>";
+    return;
   }
 
-  function renderPortalView() {
-    document.getElementById("authSection").style.display = "none";
-    document.getElementById("portalContent").style.display = "block";
-
-    const roleEl = document.getElementById("roleLabel");
-    const adminSec = document.getElementById("adminOverviewSection");
-
-    if (currentRole === "admin") {
-      roleEl.innerText = "⚙️ Admin Console";
-      roleEl.style.background = "#78350f";
-      roleEl.style.color = "#fef3c7";
-      adminSec.style.display = "block";
-      document.getElementById("studentFormWrapper").style.display = "block";
-      document.getElementById("parentFormWrapper").style.display = "block";
-      renderAdminMatrix();
-    } else if (currentRole === "student") {
-      roleEl.innerText = "🎮 Student Workspace";
-      roleEl.style.background = "#1e3a8a";
-      roleEl.style.color = "#bfdbfe";
-      adminSec.style.display = "none";
-      document.getElementById("studentFormWrapper").style.display = "block";
-      document.getElementById("parentFormWrapper").style.display = "none";
-    } else {
-      roleEl.innerText = "👨‍👩‍👦 Parent Workspace";
-      roleEl.style.background = "#831843";
-      roleEl.style.color = "#fbcfe8";
-      adminSec.style.display = "none";
-      document.getElementById("studentFormWrapper").style.display = "none";
-      document.getElementById("parentFormWrapper").style.display = "block";
-    }
-
-    const totalH = window.MANIFEST.chart_hours.reduce((a, b) => a + b, 0);
-    document.getElementById("metricTotalHours").innerText = totalH.toFixed(1) + " hrs";
-
-    const lastSync = window.MANIFEST.aw_last_synced;
-    const awEl = document.getElementById("metricAwStatus");
-    if (!lastSync) {
-      awEl.innerHTML = "<span style='color:var(--danger);'>⚠️ No Data Logged</span>";
-    } else {
-      const safeUtc = (lastSync.endsWith("Z") || lastSync.includes("+")) ? lastSync : lastSync.replace(" ", "T") + "Z";
-      const syncDate = new Date(safeUtc);
-      const now = new Date();
-      const isToday = 
-        syncDate.getFullYear() === now.getFullYear() &&
-        syncDate.getMonth() === now.getMonth() &&
-        syncDate.getDate() === now.getDate();
-
-      const formatted = formatToClientTime(lastSync);
-      awEl.innerHTML = isToday 
-        ? "<span style='color:var(--success);'>✅ " + formatted + "</span>"
-        : "<span style='color:var(--warning);'>⚠️ Outdated (" + formatted + ")</span>";
-    }
-
-    renderReportsList();
-    initCharts();
-    if (typeof updateAWStatusBadge === "function") updateAWStatusBadge();
-  }
-
-  function renderAdminMatrix() {
-    const tbody = document.getElementById("adminComplianceBody");
-    tbody.innerHTML = "";
-    const grid = window.MANIFEST.compliance_grid;
-    const days = window.MANIFEST.chart_days;
-    const hours = window.MANIFEST.chart_hours;
-
-    days.slice().reverse().forEach((d, idx) => {
-      const origIdx = days.indexOf(d);
-      const h = hours[origIdx];
-      const comp = grid[d] || { tracker: false, academic: false, parent: false };
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td><strong>${d}</strong></td>
-        <td>${h > 0 ? `<span class="badge-check badge-ok">${h}h Logged</span>` : `<span class="badge-check badge-no">0h</span>`}</td>
-        <td>${comp.tracker ? `<span class="badge-check badge-ok">✅ Submitted</span>` : `<span class="badge-check badge-no">❌ Missing</span>`}</td>
-        <td>${comp.academic ? `<span class="badge-check badge-ok">✅ Submitted</span>` : `<span class="badge-check badge-no">❌ None</span>`}</td>
-        <td>${comp.parent ? `<span class="badge-check badge-ok">✅ Submitted</span>` : `<span class="badge-check badge-no">❌ Missing</span>`}</td>
-      `;
-      tbody.appendChild(row);
-    });
-  }
-
-  function renderReportsList() {
-    const list = document.getElementById("reportsList");
-    list.innerHTML = "";
-    let accessible = [];
-    if (currentRole === "admin") {
-      accessible = [...window.MANIFEST.student_reports, ...window.MANIFEST.parent_reports];
-    } else if (currentRole === "student") {
-      accessible = window.MANIFEST.student_reports;
-    } else {
-      accessible = window.MANIFEST.parent_reports;
-    }
-
-    document.getElementById("metricDeliverables").innerText = accessible.length + " Reports";
-
-    if (accessible.length === 0) {
-      list.innerHTML = "<p style='color: var(--muted); text-align:center; padding: 2rem;'>No deliverables generated yet.</p>";
-      return;
-    }
-
-    accessible.forEach(item => {
-      const card = document.createElement("div");
-      card.className = "report-card";
-      const icon = item.name.includes("Kid") ? "🎮" : (item.name.includes("Reward") ? "🏆" : "📈");
-      card.innerHTML = `
-        <div class="report-meta">
-          <span class="report-icon">${icon}</span>
-          <div>
-            <div class="report-name">${item.name}</div>
-            <div class="report-sub">Encrypted AES-256 deliverable (${item.role})</div>
-          </div>
+  accessible.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "report-card";
+    const icon = item.name.includes("Kid") ? "🎮" : (item.name.includes("Reward") ? "🏆" : "📈");
+    card.innerHTML = `
+      <div class="report-meta">
+        <span class="report-icon">${icon}</span>
+        <div>
+          <div class="report-name">${item.name}</div>
+          <div class="report-sub">Encrypted AES-256 deliverable (${item.role})</div>
         </div>
-        <button class="btn-decrypt" onclick="decryptAndOpen('${item.file}', '${item.name}', '${item.role}')">Decrypt & View</button>
-      `;
-      list.appendChild(card);
-    });
-  }
+      </div>
+      <button class="btn-decrypt" onclick="decryptAndOpen('${item.file}', '${item.name}', '${item.role}')">Decrypt & View</button>
+    `;
+    list.appendChild(card);
+  });
+}
 
-  function initCharts() {
-    chartInstances.forEach(c => c.destroy());
-    chartInstances = [];
+function initCharts() {
+  chartInstances.forEach(c => c.destroy());
+  chartInstances = [];
 
-    const ctxHours = document.getElementById("hoursChart").getContext("2d");
-    const chart1 = new Chart(ctxHours, {
-      type: "line",
-      data: {
-        labels: window.MANIFEST.chart_days.map(d => d.slice(5)),
-        datasets: [{
-          label: "Active Screen Hours",
-          data: window.MANIFEST.chart_hours,
-          borderColor: "#3b82f6",
-          backgroundColor: "rgba(59, 130, 246, 0.15)",
-          tension: 0.3,
-          fill: true,
-          pointRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { grid: { color: "#1f2937" }, ticks: { color: "#9ca3af" } },
-          x: { grid: { color: "#1f2937" }, ticks: { color: "#9ca3af" } }
-        }
+  const ctxHours = document.getElementById("hoursChart").getContext("2d");
+  const chart1 = new Chart(ctxHours, {
+    type: "line",
+    data: {
+      labels: window.MANIFEST.chart_days.map(d => d.slice(5)),
+      datasets: [{
+        label: "Active Screen Hours",
+        data: window.MANIFEST.chart_hours,
+        borderColor: "#3b82f6",
+        backgroundColor: "rgba(59, 130, 246, 0.15)",
+        tension: 0.3,
+        fill: true,
+        pointRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { grid: { color: "#1f2937" }, ticks: { color: "#9ca3af" } },
+        x: { grid: { color: "#1f2937" }, ticks: { color: "#9ca3af" } }
       }
-    });
-    chartInstances.push(chart1);
-
-    const ctxApps = document.getElementById("appsChart").getContext("2d");
-    const chart2 = new Chart(ctxApps, {
-      type: "doughnut",
-      data: {
-        labels: window.MANIFEST.top_apps_labels,
-        datasets: [{
-          data: window.MANIFEST.top_apps_values,
-          backgroundColor: ["#3b82f6", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6"]
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: "bottom", labels: { color: "#9ca3af", font: { size: 10 } } } }
-      }
-    });
-    chartInstances.push(chart2);
-  }
-
-  async function decryptAndOpen(filePath, docName, itemRole) {
-    try {
-      const res = await fetch(filePath);
-      if (!res.ok) throw new Error("File not found");
-      const encBytes = new Uint8Array(await res.arrayBuffer());
-      const iv = encBytes.slice(0, 16);
-      const ciphertext = encBytes.slice(16);
-
-      let keyToUse = activeKeyBytes;
-      if (currentRole === "admin") {
-        keyToUse = (itemRole === "student") ? rawStudentKey : rawParentKey;
-      }
-
-      const decrypted = await crypto.subtle.decrypt({ name: "AES-CBC", iv: iv }, keyToUse, ciphertext);
-      const blob = new Blob([decrypted], { type: "application/pdf" });
-      window.open(URL.createObjectURL(blob), "_blank");
-    } catch(e) {
-      alert("Decryption failed. Ensure the passkey matches this report's encryption key.");
     }
-  }
+  });
+  chartInstances.push(chart1);
 
-  function switchTab(tab) {
-    document.getElementById("tabBtnReports").classList.toggle("active", tab === "reports");
-    document.getElementById("tabBtnForms").classList.toggle("active", tab === "forms");
-    document.getElementById("paneReports").classList.toggle("active", tab === "reports");
-    document.getElementById("paneForms").classList.toggle("active", tab === "forms");
-  }
-
-  function lockPortal() {
-    currentRole = null;
-    activeKeyBytes = null;
-    rawStudentKey = null;
-    rawParentKey = null;
-    document.getElementById("passkeyInput").value = "";
-    document.getElementById("authSection").style.display = "block";
-    document.getElementById("portalContent").style.display = "none";
-  }
-
-  async function getCoreToken() {
-    let cipherB64 = ENC_TOKEN_STUDENT;
-    if (currentRole === "parent") cipherB64 = ENC_TOKEN_PARENT;
-    if (currentRole === "admin") cipherB64 = ENC_TOKEN_ADMIN;
-    if (!cipherB64 || !activeKeyBytes) return null;
-
-    try {
-      const raw = Uint8Array.from(atob(cipherB64), c => c.charCodeAt(0));
-      const dec = await crypto.subtle.decrypt({ name: "AES-CBC", iv: raw.slice(0, 16) }, activeKeyBytes, raw.slice(16));
-      return new TextDecoder().decode(dec);
-    } catch(e) {
-      return null;
+  const ctxApps = document.getElementById("appsChart").getContext("2d");
+  const chart2 = new Chart(ctxApps, {
+    type: "doughnut",
+    data: {
+      labels: window.MANIFEST.top_apps_labels,
+      datasets: [{
+        data: window.MANIFEST.top_apps_values,
+        backgroundColor: ["#3b82f6", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6"]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: "bottom", labels: { color: "#9ca3af", font: { size: 10 } } } }
     }
-  }
+  });
+  chartInstances.push(chart2);
+}
 
-  function utf8ToBase64(str) {
-    return window.btoa(unescape(encodeURIComponent(str)));
-  }
+async function decryptAndOpen(filePath, docName, itemRole) {
+  try {
+    const res = await fetch(filePath);
+    if (!res.ok) throw new Error("File not found");
+    const encBytes = new Uint8Array(await res.arrayBuffer());
+    const iv = encBytes.slice(0, 16);
+    const ciphertext = encBytes.slice(16);
 
-  async function pushFileToCore(filePath, contentString, commitMessage) {
-    const token = await getCoreToken();
-    if (!token) {
-      alert("Error: Write token not available. Please re-login.");
-      return false;
+    let keyToUse = activeKeyBytes;
+    if (currentRole === "admin") {
+      keyToUse = (itemRole === "student") ? rawStudentKey : rawParentKey;
     }
 
-    const apiUrl = `https://api.github.com/repos/${CORE_REPO}/contents/${filePath}`;
-    let sha = null;
-    try {
-      const checkRes = await fetch(apiUrl, { headers: { "Authorization": `Bearer ${token}`, "Accept": "application/vnd.github+json" } });
-      if (checkRes.ok) sha = (await checkRes.json()).sha;
-    } catch(err) {}
+    const decrypted = await crypto.subtle.decrypt({ name: "AES-CBC", iv: iv }, keyToUse, ciphertext);
+    const blob = new Blob([decrypted], { type: "application/pdf" });
+    window.open(URL.createObjectURL(blob), "_blank");
+  } catch (e) {
+    alert("Decryption failed. Ensure the passkey matches this report's encryption key.");
+  }
+}
 
-    const res = await fetch(apiUrl, {
-      method: "PUT",
-      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json", "Accept": "application/vnd.github+json" },
-      body: JSON.stringify({ message: commitMessage, content: utf8ToBase64(contentString), branch: "main", ...(sha ? { sha } : {}) })
-    });
-    return res.ok;
+function switchTab(tab) {
+  document.getElementById("tabBtnReports").classList.toggle("active", tab === "reports");
+  document.getElementById("tabBtnForms").classList.toggle("active", tab === "forms");
+  document.getElementById("paneReports").classList.toggle("active", tab === "reports");
+  document.getElementById("paneForms").classList.toggle("active", tab === "forms");
+}
+
+function lockPortal() {
+  currentRole = null;
+  activeKeyBytes = null;
+  rawStudentKey = null;
+  rawParentKey = null;
+  document.getElementById("passkeyInput").value = "";
+  document.getElementById("authSection").style.display = "block";
+  document.getElementById("portalContent").style.display = "none";
+}
+
+async function getCoreToken() {
+  let cipherB64 = ENV_CONFIG.token_student;
+  if (currentRole === "parent") cipherB64 = ENV_CONFIG.token_parent;
+  if (currentRole === "admin") cipherB64 = ENV_CONFIG.token_admin;
+  if (!cipherB64 || !activeKeyBytes) return null;
+
+  try {
+    const raw = Uint8Array.from(atob(cipherB64), c => c.charCodeAt(0));
+    const dec = await crypto.subtle.decrypt({ name: "AES-CBC", iv: raw.slice(0, 16) }, activeKeyBytes, raw.slice(16));
+    return new TextDecoder().decode(dec);
+  } catch (e) {
+    return null;
+  }
+}
+
+function utf8ToBase64(str) {
+  return window.btoa(unescape(encodeURIComponent(str)));
+}
+
+async function pushFileToCore(filePath, contentString, commitMessage) {
+  const token = await getCoreToken();
+  if (!token) {
+    alert("Error: Write token not available. Please re-login.");
+    return false;
   }
 
-  window.pushActivityWatchOnly = async function(awExportJson) {
-    const awPath = `data/${TENANT_ID}/raw_aw/aw-export-latest.json`;
-    return await pushFileToCore(awPath, JSON.stringify(awExportJson), `chore(${TENANT_ID}): quick-sync activitywatch dump [skip ci]`);
-  };
+  const apiUrl = `https://api.github.com/repos/${ENV_CONFIG.core_repo}/contents/${filePath}`;
+  let sha = null;
+  try {
+    const checkRes = await fetch(apiUrl, { headers: { "Authorization": `Bearer ${token}`, "Accept": "application/vnd.github+json" } });
+    if (checkRes.ok) sha = (await checkRes.json()).sha;
+  } catch (err) {}
 
-  window.submitTenantBundle = async function(trackerJson, awExportJson, studentName) {
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    const cleanName = studentName ? "_" + studentName.trim().replace(/[^a-zA-Z0-9]/g, '_') : "";
+  const res = await fetch(apiUrl, {
+    method: "PUT",
+    headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json", "Accept": "application/vnd.github+json" },
+    body: JSON.stringify({ message: commitMessage, content: utf8ToBase64(contentString), branch: "main", ...(sha ? { sha } : {}) })
+  });
+  return res.ok;
+}
 
-    const trackerPath = `data/${TENANT_ID}/feedbacks/Tracker${cleanName}_${yyyy}_${mm}_${dd}.json`;
-    const okTracker = await pushFileToCore(trackerPath, JSON.stringify(trackerJson, null, 2), `chore(${TENANT_ID}): update daily tracker [skip ci]`);
+window.pushActivityWatchOnly = async function(awExportJson) {
+  const awPath = `data/${ENV_CONFIG.tenant_id}/raw_aw/aw-export-latest.json`;
+  return await pushFileToCore(awPath, JSON.stringify(awExportJson), `chore(${ENV_CONFIG.tenant_id}): quick-sync activitywatch dump [skip ci]`);
+};
 
-    let okAW = true;
-    if (awExportJson) {
-      const awPath = `data/${TENANT_ID}/raw_aw/aw-export-latest.json`;
-      okAW = await pushFileToCore(awPath, JSON.stringify(awExportJson), `chore(${TENANT_ID}): sync activitywatch logs [skip ci]`);
-    }
-    return okTracker && okAW;
-  };
+window.submitTenantBundle = async function(trackerJson, awExportJson, studentName) {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const cleanName = studentName ? "_" + studentName.trim().replace(/[^a-zA-Z0-9]/g, '_') : "";
 
-  window.submitTenantFeedback = async function(prefix, payloadJson, role) {
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    const feedbackPath = `data/${TENANT_ID}/feedbacks/${prefix}_${yyyy}_${mm}_${dd}.json`;
-    return await pushFileToCore(feedbackPath, JSON.stringify(payloadJson, null, 2), `chore(${TENANT_ID}): submit ${prefix} [skip ci]`);
-  };
+  const trackerPath = `data/${ENV_CONFIG.tenant_id}/feedbacks/Tracker${cleanName}_${yyyy}_${mm}_${dd}.json`;
+  const okTracker = await pushFileToCore(trackerPath, JSON.stringify(trackerJson, null, 2), `chore(${ENV_CONFIG.tenant_id}): update daily tracker [skip ci]`);
+
+  let okAW = true;
+  if (awExportJson) {
+    const awPath = `data/${ENV_CONFIG.tenant_id}/raw_aw/aw-export-latest.json`;
+    okAW = await pushFileToCore(awPath, JSON.stringify(awExportJson), `chore(${ENV_CONFIG.tenant_id}): sync activitywatch logs [skip ci]`);
+  }
+  return okTracker && okAW;
+};
+
+window.submitTenantFeedback = async function(prefix, payloadJson, role) {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const feedbackPath = `data/${ENV_CONFIG.tenant_id}/feedbacks/${prefix}_${yyyy}_${mm}_${dd}.json`;
+  return await pushFileToCore(feedbackPath, JSON.stringify(payloadJson, null, 2), `chore(${ENV_CONFIG.tenant_id}): submit ${prefix} [skip ci]`);
+};
+
 </script>
 
 </body>
