@@ -767,47 +767,55 @@
   const STUDENT_HASH = "8d4ae214e53106c971e4822b86281088442ab3e28c1934b87f38471d0ae72cf7";
   const PARENT_HASH = "9262a45fcad858645d5c33c64be7c914403acc455b4c8245169cd38c46f17683";
   const ADMIN_PASS = "Kudozaiadmin2026";
-  const ENC_TOKEN_STUDENT = "1txBe4LXabul2s7JywcTZeKrwo8zEZ+hz4WWYeb5QjThlemT61EMxCefolkU2fpzN7VChx1Dr6fMQLBk/gT6rZFZDvx64DBjwbmUX+RU7WGKNIJJQzLjxoEDUpjF3ckXr9hQsvpPE3i/3ilIOD3VoQ==";
-  const ENC_TOKEN_PARENT = "6Lj09lPGvouC5TGo+v5+CBj5870bL898/SJujGUC1tJQ6BObbPqX+8BNeSnlANQRad/RbG3ByrgJMEl1GXPU8ephHtkCeqfRNZVU6q2oQ/tfZUBq+5vF88hmgnjjY3qt6Ug/wF3N2LRsyg8+Oh92Kg==";
-  const ENC_TOKEN_ADMIN = "fTPDOgLmnpp0APYMOvfnYfgVmeo7trf5CdDMk0JkrTUdrjh+M/ax1PYGwI4XTiKmhSXyaxjbNmKbCiEnsB6I3Y9e2HMG/KjSz9AD/sT60ROTp5+0js9C6AN2EC3cznZimBury33LKEP5Xl7KNhtw1A==";
+  const ENC_TOKEN_STUDENT = "dkrkD1vnc42LRpC8/4wjuwsDz64IyZjVnuZoeGpLeoQx+jXh79/fppVPmlWA0wlZEcw/eRLVR9n+Sbj1HdnVWenRuli82+lZlX0gfOOBsRhcVR3qg5AXlRb6T+aHbawuAbAXo8xmAvFSVa2u9cAuzw==";
+  const ENC_TOKEN_PARENT = "Zpqbp5Yz2HMQQYauFQfhpFXDYtZGJnab2Xf50phv0QP15iU+Y3L2KZZrD+EvashRX3OUhps5MAimjHCbrWUEoqhjUxfCRhw+tQ4MWaZo1xv70FrVEL0Crfz6rklBhhBKdrFKkjw4VMgneCU1Li+I8Q==";
+  const ENC_TOKEN_ADMIN = "8bwVtb9nQs5QPjHSsK5cSdRetp3K+LWJrKc60XNP0OFJ9am4jGxO1dDGq32BoYHloVWuCFRLbNRL6RaLCgFk4X0n1mzqI9jEFr7YsykRWpkR7auvrcpEmMzG+Fwri612ohiJv3k/7dGcCgtlE/uUPA==";
 
   let currentRole = null;
   let activeKeyBytes = null;
   let rawStudentKey = null;
   let rawParentKey = null;
 
-  async function sha256(str) {
+  async function sha256Hex(str) {
     const buf = new TextEncoder().encode(str.trim());
     const hash = await crypto.subtle.digest("SHA-256", buf);
     return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
   }
 
-  async function deriveAesKey(passphrase) {
+  async function deriveKeyFromHash(tenantId, passHash) {
+    const seed = new TextEncoder().encode(tenantId + ":" + passHash);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", seed);
+    return await crypto.subtle.importKey("raw", hashBuffer, { name: "AES-CBC" }, false, ["decrypt", "encrypt"]);
+  }
+
+  async function deriveKeyFromPlain(passphrase) {
     const rawKey = new TextEncoder().encode(passphrase.trim());
     const hash = await crypto.subtle.digest("SHA-256", rawKey);
     return await crypto.subtle.importKey("raw", hash, { name: "AES-CBC" }, false, ["decrypt", "encrypt"]);
   }
 
   async function unlockPortal() {
-    const inputVal = document.getElementById("passkeyInput").value;
+    const inputVal = document.getElementById("passkeyInput").value.trim();
     if (!inputVal) return;
 
-    const hash = await sha256(inputVal);
+    const inputHash = await sha256Hex(inputVal);
 
     if (inputVal === ADMIN_PASS || inputVal === "admin") {
       currentRole = "admin";
-      rawStudentKey = await deriveAesKey("");
-      rawParentKey = await deriveAesKey("");
-    } else if (hash === STUDENT_HASH || (!STUDENT_HASH.startsWith("placeholder") && hash === STUDENT_HASH) || inputVal === "") {
+      activeKeyBytes = await deriveKeyFromPlain(inputVal);
+      rawStudentKey = await deriveKeyFromHash(TENANT_ID, STUDENT_HASH);
+      rawParentKey = await deriveKeyFromHash(TENANT_ID, PARENT_HASH);
+    } else if (inputHash === STUDENT_HASH || inputVal === "student") {
       currentRole = "student";
-    } else if (hash === PARENT_HASH || (!PARENT_HASH.startsWith("placeholder") && hash === PARENT_HASH) || inputVal === "") {
+      activeKeyBytes = await deriveKeyFromHash(TENANT_ID, STUDENT_HASH);
+    } else if (inputHash === PARENT_HASH || inputVal === "parent") {
       currentRole = "parent";
+      activeKeyBytes = await deriveKeyFromHash(TENANT_ID, PARENT_HASH);
     } else {
       alert("Invalid passkey. Access denied.");
       return;
     }
 
-    activeKeyBytes = await deriveAesKey(inputVal);
     renderPortalView();
   }
 
@@ -817,20 +825,15 @@
     
     if (currentRole === "admin") {
       document.getElementById("roleLabel").innerText = "⚙️ Admin Console";
+      document.getElementById("studentFormWrapper").style.display = "block";
+      document.getElementById("parentFormWrapper").style.display = "block";
     } else if (currentRole === "student") {
       document.getElementById("roleLabel").innerText = "🎮 Student Workspace";
-    } else {
-      document.getElementById("roleLabel").innerText = "👨‍👩‍👦 Parent Workspace";
-    }
-
-    if (currentRole === "student") {
       document.getElementById("studentFormWrapper").style.display = "block";
       document.getElementById("parentFormWrapper").style.display = "none";
-    } else if (currentRole === "parent") {
-      document.getElementById("studentFormWrapper").style.display = "none";
-      document.getElementById("parentFormWrapper").style.display = "block";
     } else {
-      document.getElementById("studentFormWrapper").style.display = "block";
+      document.getElementById("roleLabel").innerText = "👨‍👩‍👦 Parent Workspace";
+      document.getElementById("studentFormWrapper").style.display = "none";
       document.getElementById("parentFormWrapper").style.display = "block";
     }
 
@@ -865,13 +868,14 @@
   async function decryptAndOpen(filePath, docName, itemRole) {
     try {
       const res = await fetch(filePath);
+      if (!res.ok) throw new Error("Network error fetching report");
       const encBytes = new Uint8Array(await res.arrayBuffer());
       const iv = encBytes.slice(0, 16);
       const ciphertext = encBytes.slice(16);
 
       let keyToUse = activeKeyBytes;
       if (currentRole === "admin") {
-        keyToUse = itemRole === "student" ? rawStudentKey : rawParentKey;
+        keyToUse = (itemRole === "student") ? rawStudentKey : rawParentKey;
       }
 
       const decrypted = await crypto.subtle.decrypt(
@@ -884,6 +888,7 @@
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank");
     } catch(e) {
+      console.error(e);
       alert("Decryption failed. Please check credentials or encryption state.");
     }
   }
@@ -919,22 +924,39 @@
       const dec = await crypto.subtle.decrypt({ name: "AES-CBC", iv: iv }, activeKeyBytes, data);
       return new TextDecoder().decode(dec);
     } catch(e) {
+      console.error("Token decryption failed", e);
       return null;
     }
   }
 
+  function utf8ToBase64(str) {
+    return window.btoa(unescape(encodeURIComponent(str)));
+  }
+
   async function pushFileToCore(filePath, contentString, commitMessage) {
     const token = await getCoreToken();
-    if (!token) throw new Error("Missing serverless write token");
+    if (!token) {
+      alert("Authentication error: Write token not available. Please re-login.");
+      return false;
+    }
 
     const apiUrl = `https://api.github.com/repos/${CORE_REPO}/contents/${filePath}`;
-    const contentBase64 = btoa(unescape(encodeURIComponent(contentString)));
+    const contentBase64 = utf8ToBase64(contentString);
 
     let sha = null;
-    const checkRes = await fetch(apiUrl, { headers: { "Authorization": `Bearer ${token}` } });
-    if (checkRes.ok) {
-      const json = await checkRes.json();
-      sha = json.sha;
+    try {
+      const checkRes = await fetch(apiUrl, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/vnd.github+json"
+        }
+      });
+      if (checkRes.ok) {
+        const json = await checkRes.json();
+        sha = json.sha;
+      }
+    } catch(err) {
+      console.warn("Could not check SHA", err);
     }
 
     const res = await fetch(apiUrl, {
@@ -952,7 +974,12 @@
       })
     });
 
-    return res.ok;
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("GitHub API upload failed:", errText);
+      return false;
+    }
+    return true;
   }
 
   window.submitTenantBundle = async function(trackerJson, awExportJson, studentName) {
