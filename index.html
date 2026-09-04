@@ -222,7 +222,7 @@
     <!-- Tab 2: Feedback & Input Forms -->
     <div id="paneForms" class="tab-pane">
       <div id="studentFormWrapper" style="display:none;" class="form-embed-card">
-        <!-- Kudoz AI v3.1 Modular Daily Tracker Component -->
+        <!-- Kudoz AI v3.1 Modular Daily Tracker Component (Zero-Friction File Drop & Sync) -->
 <style>
   .kudoz-tracker-container {
     width: 100%;
@@ -239,20 +239,18 @@
     border-radius: 10px;
     padding: 1rem;
     margin-bottom: 1.5rem;
+  }
+  .kudoz-tracker-container .sync-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 1rem;
+    margin-bottom: 0.75rem;
     flex-wrap: wrap;
-  }
-  .kudoz-tracker-container .sync-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.5rem;
   }
   .kudoz-tracker-container .sync-title {
-    font-size: 0.9rem;
-    font-weight: 700;
+    font-size: 0.95rem;
+    font-weight: 800;
     color: #1e293b;
     display: flex;
     align-items: center;
@@ -282,23 +280,65 @@
   }
   @keyframes flashAlert {
     0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-    100% { transform: scale(1.03); box-shadow: 0 0 10px 3px rgba(239, 68, 68, 0.3); }
+    100% { transform: scale(1.02); box-shadow: 0 0 8px 2px rgba(239, 68, 68, 0.3); }
   }
-  .kudoz-tracker-container .btn-sync-aw {
-    background: #0f172a;
-    color: #ffffff;
-    border: none;
-    padding: 0.6rem 1.1rem;
+  
+  .kudoz-tracker-container .dropzone-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #94a3b8;
+    background: #ffffff;
     border-radius: 8px;
-    font-size: 0.82rem;
-    font-weight: 700;
+    padding: 1.25rem 1rem;
     cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .kudoz-tracker-container .dropzone-box:hover,
+  .kudoz-tracker-container .dropzone-box.dragover {
+    border-color: #2563eb;
+    background: #eff6ff;
+  }
+  .kudoz-tracker-container .dropzone-icon {
+    font-size: 1.6rem;
+    margin-bottom: 0.25rem;
+  }
+  .kudoz-tracker-container .dropzone-text {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+  .kudoz-tracker-container .dropzone-sub {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 0.2rem;
+  }
+  .kudoz-tracker-container .export-shortcut {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    transition: background 0.15s;
+    gap: 0.3rem;
+    background: #2563eb;
+    color: #ffffff;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-top: 0.4rem;
   }
-  .kudoz-tracker-container .btn-sync-aw:hover { background: #334155; }
+  .kudoz-tracker-container .export-shortcut:hover {
+    background: #1d4ed8;
+  }
+  .kudoz-tracker-container .file-selected-indicator {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #15803d;
+    display: none;
+  }
+
   .kudoz-tracker-container .header {
     border-bottom: 2px solid #f1f5f9;
     padding-bottom: 0.75rem;
@@ -400,17 +440,38 @@
 </style>
 
 <div class="kudoz-tracker-container">
-  <!-- Quick ActivityWatch Sync Sub-Card -->
+  <!-- ActivityWatch Dropzone & Quick Sync Card -->
   <div class="sync-card">
-    <div class="sync-meta">
-      <div class="sync-title">💻 Local ActivityWatch Sync Stream</div>
-      <div>
-        <span id="trackerAwStatusBadge" class="sync-badge">Checking sync state...</span>
-      </div>
+    <div class="sync-header">
+      <div class="sync-title">💻 Local ActivityWatch Screen Time Sync</div>
+      <span id="trackerAwStatusBadge" class="sync-badge">Checking sync state...</span>
     </div>
-    <button type="button" class="btn-sync-aw" onclick="syncActivityWatchOnly()">
-      ⚡ Push Screen Time Only
-    </button>
+
+    <div style="font-size: 0.8rem; color: #475569; margin-bottom: 0.5rem;">
+      <strong>Step 1:</strong> 
+      <a href="http://127.0.0.1:5600/#/buckets" target="_blank" class="export-shortcut">
+        🔗 Open ActivityWatch Export Page
+      </a>
+      <span> &rarr; Click <em>"Export all buckets as JSON"</em> at bottom right.</span>
+    </div>
+
+    <div style="font-size: 0.8rem; color: #475569; margin-bottom: 0.5rem;">
+      <strong>Step 2:</strong> Drop or choose that exported JSON file below:
+    </div>
+
+    <div class="dropzone-box" id="awDropZone" onclick="document.getElementById('awFileInput').click()">
+      <div class="dropzone-icon">📁</div>
+      <div class="dropzone-text">Click or Drag & Drop <code>aw-export.json</code> here</div>
+      <div class="dropzone-sub">Accepts exported ActivityWatch JSON files</div>
+      <input type="file" id="awFileInput" accept=".json" style="display:none;" onchange="handleAWFileSelect(this.files)" />
+      <div id="fileSelectedIndicator" class="file-selected-indicator"></div>
+    </div>
+
+    <div style="margin-top: 0.75rem; display: flex; justify-content: flex-end;">
+      <button type="button" id="btnAwSyncOnly" class="export-shortcut" style="background:#0f172a; cursor:pointer;" onclick="syncUploadedAWOnly()">
+        ⚡ Push Screen Time Only
+      </button>
+    </div>
   </div>
 
   <div class="header">
@@ -481,9 +542,12 @@
 </div>
 
 <script>
+  let loadedAWJson = null;
+
   (function() {
     const dInput = document.getElementById('trackerDate');
     if (dInput) dInput.valueAsDate = new Date();
+    setupDropZone();
     updateAWStatusBadge();
   })();
 
@@ -510,49 +574,79 @@
     }
   }
 
-  async function fetchLocalActivityWatch() {
-    try {
-      const response = await fetch("http://localhost:5600/api/0/export", {
-        method: "GET",
-        mode: "cors"
-      });
-      if (!response.ok) throw new Error("HTTP " + response.status);
-      return await response.json();
-    } catch (err) {
-      return null;
-    }
+  function setupDropZone() {
+    const dropZone = document.getElementById('awDropZone');
+    if (!dropZone) return;
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('dragover');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('dragover');
+      }, false);
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      handleAWFileSelect(files);
+    }, false);
   }
 
-  async function syncActivityWatchOnly() {
-    const badge = document.getElementById('trackerAwStatusBadge');
-    badge.className = "sync-badge";
-    badge.innerText = "⏳ Connecting to localhost:5600...";
+  function handleAWFileSelect(files) {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    const reader = new FileReader();
 
-    const awData = await fetchLocalActivityWatch();
-    if (!awData) {
-      alert("⚠️ ActivityWatch is not detected at http://localhost:5600.\n\nPlease ensure the ActivityWatch application is running on your computer.");
-      updateAWStatusBadge();
+    reader.onload = function(e) {
+      try {
+        loadedAWJson = JSON.parse(e.target.result);
+        const indicator = document.getElementById('fileSelectedIndicator');
+        indicator.style.display = "block";
+        indicator.innerHTML = `✅ Loaded: <strong>${file.name}</strong> (${(file.size / 1024).toFixed(1)} KB)`;
+      } catch (err) {
+        alert("Invalid JSON file selected.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  async function syncUploadedAWOnly() {
+    if (!loadedAWJson) {
+      alert("Please select or drop an exported ActivityWatch JSON file first.");
       return;
     }
 
-    badge.innerText = "🚀 Pushing dump to KudozAI Server...";
+    const btn = document.getElementById('btnAwSyncOnly');
+    btn.innerText = "⏳ Pushing to server...";
+    btn.disabled = true;
+
     if (window.pushActivityWatchOnly) {
-      const ok = await window.pushActivityWatchOnly(awData);
+      const ok = await window.pushActivityWatchOnly(loadedAWJson);
       if (ok) {
         const nowStr = new Date().toISOString().replace('T', ' ').slice(0, 19);
         if (window.MANIFEST) window.MANIFEST.aw_last_synced = nowStr;
-        alert("🎉 Successfully synced ActivityWatch screen-time logs to KudozAI Server!");
+        alert("🎉 Successfully pushed ActivityWatch screen time to KudozAI Server!");
         updateAWStatusBadge();
       } else {
         alert("❌ Failed to push ActivityWatch data to server.");
-        updateAWStatusBadge();
       }
     }
+
+    btn.innerText = "⚡ Push Screen Time Only";
+    btn.disabled = false;
   }
 
   async function submitTrackerAndAW() {
     const btn = document.getElementById('btnTrackerSubmit');
-    const confirmed = confirm("Push daily tracker and screen time to KudozAI Server?");
+    const confirmed = confirm("Push daily tracker to KudozAI Server?");
     if (!confirmed) return;
 
     btn.disabled = true;
@@ -577,13 +671,12 @@
       }
     };
 
-    const awData = await fetchLocalActivityWatch();
     if (window.submitTenantBundle) {
-      const success = await window.submitTenantBundle(trackerPayload, awData, name);
+      const success = await window.submitTenantBundle(trackerPayload, loadedAWJson, name);
       if (success) {
         const nowStr = new Date().toISOString().replace('T', ' ').slice(0, 19);
-        if (window.MANIFEST) window.MANIFEST.aw_last_synced = nowStr;
-        alert("🎉 Successfully pushed Daily Tracker & Screen Time to KudozAI Server!");
+        if (loadedAWJson && window.MANIFEST) window.MANIFEST.aw_last_synced = nowStr;
+        alert("🎉 Successfully pushed Daily Tracker" + (loadedAWJson ? " & Screen Time" : "") + " to KudozAI Server!");
         updateAWStatusBadge();
       } else {
         alert("⚠️ Upload failed. Please check network connection.");
@@ -979,15 +1072,15 @@
 </div>
 
 <script>
-  window.MANIFEST = {"tenant_id": "tenant_9614932", "display_name": "Rayyan", "aw_last_synced": "2026-09-04 11:50:00", "chart_days": ["2026-08-29", "2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04"], "chart_hours": [9.13, 2.64, 3.95, 2.73, 3.13, 3.75, 1.61], "top_apps_labels": ["ApplicationFrameHost.exe", "chrome.exe", "explorer.exe", "LockApp.exe", "FoxitPDFReader.exe"], "top_apps_values": [40.67, 26.69, 10.96, 6.2, 3.72], "compliance_grid": {"2026-08-29": {"tracker": false, "academic": false, "parent": false}, "2026-08-30": {"tracker": false, "academic": false, "parent": false}, "2026-08-31": {"tracker": false, "academic": false, "parent": false}, "2026-09-01": {"tracker": false, "academic": false, "parent": false}, "2026-09-02": {"tracker": false, "academic": false, "parent": false}, "2026-09-03": {"tracker": false, "academic": false, "parent": false}, "2026-09-04": {"tracker": true, "academic": true, "parent": true}}, "student_reports": [{"name": "Summary_For_Kids_2026-09-04", "file": "reports/Summary_For_Kids_2026-09-04.pdf.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.student.enc", "role": "student"}], "parent_reports": [{"name": "Productivity_Report_2026-09-04", "file": "reports/Productivity_Report_2026-09-04.pdf.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.parent.enc", "role": "parent"}]};
+  window.MANIFEST = {"tenant_id": "tenant_9614932", "display_name": "Rayyan", "aw_last_synced": "2026-09-04 12:43:48", "chart_days": ["2026-08-29", "2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04"], "chart_hours": [9.13, 2.64, 3.95, 2.73, 3.13, 3.75, 1.61], "top_apps_labels": ["ApplicationFrameHost.exe", "chrome.exe", "explorer.exe", "LockApp.exe", "FoxitPDFReader.exe"], "top_apps_values": [40.67, 26.69, 10.96, 6.2, 3.72], "compliance_grid": {"2026-08-29": {"tracker": false, "academic": false, "parent": false}, "2026-08-30": {"tracker": false, "academic": false, "parent": false}, "2026-08-31": {"tracker": false, "academic": false, "parent": false}, "2026-09-01": {"tracker": false, "academic": false, "parent": false}, "2026-09-02": {"tracker": false, "academic": false, "parent": false}, "2026-09-03": {"tracker": false, "academic": false, "parent": false}, "2026-09-04": {"tracker": true, "academic": true, "parent": true}}, "student_reports": [{"name": "Summary_For_Kids_2026-09-04", "file": "reports/Summary_For_Kids_2026-09-04.pdf.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.student.enc", "role": "student"}], "parent_reports": [{"name": "Productivity_Report_2026-09-04", "file": "reports/Productivity_Report_2026-09-04.pdf.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.parent.enc", "role": "parent"}]};
   const TENANT_ID = "tenant_9614932";
   const CORE_REPO = "nooraxollc-source/kudoz-ai-v3.1";
   const STUDENT_HASH = "8d4ae214e53106c971e4822b86281088442ab3e28c1934b87f38471d0ae72cf7";
   const PARENT_HASH = "9262a45fcad858645d5c33c64be7c914403acc455b4c8245169cd38c46f17683";
   const ADMIN_PASS = "Kudozaiadmin2026";
-  const ENC_TOKEN_STUDENT = "CGPTsOkBJvlAineyB5oTR1DHxvmuzux09bhWgDCqjOprm3KBxAgxso62dJJ5jCUHeQarylfxHMbFz1IWbQP/u6PRCL+lBq0BIg8i3lpb0QIozmzTAyU6y3vP/6gJzgo5dek+APZrRMI93MhxW//f4Q==";
-  const ENC_TOKEN_PARENT = "l3PI0tgR9X4Mbo2VcueIqRZtLAlr0jzjMSUiEzo1JVkeND5ENPkVS0DKFTRWHemnyHKi0JI0Vl6UOdXrigDsxRNdvMwd7IxeQ1ErO9+mM6aBMHBNxbmwMz117RT9G4HLb2Fkjf6JYIyJnM8mqD5kaA==";
-  const ENC_TOKEN_ADMIN = "LAwlZhEyNY63tu78XYvjm24vftlaq117nM2jwVuG5y0OmnjRHoc5i83BK0A2v0EFGM2pmzHb5PhvIjDOVkQZrdMPM+rLCxTFc6eH1qtivxp6quu9oQMX6RWKti0XwjeHZWk9rzrj06puniqkKy7jSw==";
+  const ENC_TOKEN_STUDENT = "auyb9Z9YGHFw0yY9KeVPn6c7/z46agtSQaZBYvgDgcU+0OR6HDnUyS3WEBtPwDC7+IztC3GEgRFfWD4+PFuLYdu+EoV0abxgMnBlXlSoF0S+n/VIOcQhAh6Oi+3j2nje7Cwshk4SPkDmj98KoQylQg==";
+  const ENC_TOKEN_PARENT = "WsaqN5a1NJYdP092qrBVyaRdzAzV9WeJjQtBrfkhJCwgSGeD8QtEt4oJ/fF/VwxlAAXe6gte8BhECAjAepAI6Y0bP0IC7hOSyGwwN644UySipbFT/LDWCQGlfnncCYnzAoE/Ezd7r/Dyn1pz18ozLg==";
+  const ENC_TOKEN_ADMIN = "p+2hqbDn4eWtAfxKq8kDxHP+vTFKJP+ap5K8KmpLQcb2brbwqWH24BrfFRL8gQonFPZrtwCj1ArWIOoNS1AaCiUq6TQqdSP8qnSQatihKIKcFWb1rWNiCjmonQJWn/3mn+qeY3lHzJP3euHfL273yw==";
 
   let currentRole = null;
   let activeKeyBytes = null;
