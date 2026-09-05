@@ -1168,6 +1168,13 @@ body {
     box-sizing: border-box;
     font-size: 13px;
   }
+  .kudoz-academic-container .pct-text {
+    font-weight: 700;
+    font-size: 12.5px;
+    color: #2563eb;
+    text-align: center;
+    display: block;
+  }
   .kudoz-academic-container .btn-add {
     background: #10b981;
     color: white;
@@ -1208,6 +1215,14 @@ body {
     color: #64748b;
     font-weight: normal;
   }
+  .academic-footer-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #64748b;
+  }
 </style>
 
 <div class="kudoz-academic-container">
@@ -1224,11 +1239,12 @@ body {
   <table>
     <thead>
       <tr>
-        <th style="width: 25%;">Category / Institution</th>
-        <th style="width: 30%;">Subject</th>
-        <th style="width: 18%;">Obtained Marks</th>
-        <th style="width: 18%;">Total Marks</th>
-        <th style="width: 9%; text-align: center;">Action</th>
+        <th style="width: 24%;">Category / Institution</th>
+        <th style="width: 28%;">Subject</th>
+        <th style="width: 16%;">Obtained Marks</th>
+        <th style="width: 16%;">Total Marks</th>
+        <th style="width: 10%; text-align: center;">Score %</th>
+        <th style="width: 6%; text-align: center;">Action</th>
       </tr>
     </thead>
     <tbody id="testTableBody">
@@ -1237,28 +1253,57 @@ body {
   </table>
 
   <button type="button" class="btn-add" onclick="addAcademicRow()">+ Add Subject Record</button>
+  
   <button type="button" class="btn-submit-action" onclick="submitAcademicProgress()">
     🚀 Push Academic Tests to KudozAI Server
   </button>
+  
+  <div class="academic-footer-bar">
+    <span id="academicDraftStatus">Auto-saves draft locally</span>
+    <span id="academicCumulativeStatus">Cumulative Score: 0.0%</span>
+  </div>
 </div>
 
 <script>
+  const ACADEMIC_DRAFT_KEY = "kudoz_v31_academic_draft";
+  const MAX_RECORDS = 50;
+
   (function() {
     const dateInput = document.getElementById('academicSubmissionDate');
     if (dateInput) dateInput.valueAsDate = new Date();
+    restoreAcademicDraft();
   })();
 
-  const MAX_RECORDS = 50;
-
-  function updateCounter() {
+  function updateCounterAndAverages() {
     const tableBody = document.getElementById('testTableBody');
     const recordCounter = document.getElementById('recordCounter');
     if (tableBody && recordCounter) {
       recordCounter.textContent = `${tableBody.rows.length} / ${MAX_RECORDS} Records`;
     }
+
+    let grandObt = 0;
+    let grandTot = 0;
+    const rows = tableBody.rows;
+    for (let i = 0; i < rows.length; i++) {
+      const obt = parseFloat(rows[i].querySelector('.obtained-input').value) || 0;
+      const tot = parseFloat(rows[i].querySelector('.total-input').value) || 0;
+      const pctLabel = rows[i].querySelector('.pct-text');
+      
+      const pct = tot > 0 ? ((obt / tot) * 100).toFixed(1) : "0.0";
+      if (pctLabel) pctLabel.textContent = `${pct}%`;
+
+      grandObt += obt;
+      grandTot += tot;
+    }
+
+    const cumPct = grandTot > 0 ? ((grandObt / grandTot) * 100).toFixed(1) : "0.0";
+    const cumLabel = document.getElementById('academicCumulativeStatus');
+    if (cumLabel) cumLabel.textContent = `Cumulative Score: ${cumPct}%`;
+
+    saveAcademicDraft();
   }
 
-  function addAcademicRow() {
+  function addAcademicRow(initialData = {}) {
     const tableBody = document.getElementById('testTableBody');
     if (tableBody.rows.length >= MAX_RECORDS) {
       alert("Maximum limit of 50 test records reached.");
@@ -1266,28 +1311,37 @@ body {
     }
 
     const row = tableBody.insertRow();
+    const cat = initialData.category || "School";
+    const subj = initialData.subject || "";
+    const obt = initialData.obtained !== undefined ? initialData.obtained : "";
+    const tot = initialData.total !== undefined ? initialData.total : 50;
+    const pct = (obt && tot) ? ((obt / tot) * 100).toFixed(1) : "0.0";
+
     row.innerHTML = `
       <td>
-        <select class="category-input">
-          <option value="School">School Exam / Quiz</option>
-          <option value="Academy">Academy / Coaching Test</option>
-          <option value="Home">Home Practice Test</option>
+        <select class="category-input" onchange="updateCounterAndAverages()">
+          <option value="School" ${cat === "School" ? "selected" : ""}>School Exam / Quiz</option>
+          <option value="Academy" ${cat === "Academy" ? "selected" : ""}>Academy / Coaching Test</option>
+          <option value="Home" ${cat === "Home" ? "selected" : ""}>Home Practice Test</option>
         </select>
       </td>
       <td>
-        <input type="text" class="subject-input" placeholder="e.g. Mathematics" required>
+        <input type="text" class="subject-input" value="${subj}" placeholder="e.g. Mathematics" required oninput="updateCounterAndAverages()">
       </td>
       <td>
-        <input type="number" class="obtained-input" step="0.5" min="0" placeholder="45" required>
+        <input type="number" class="obtained-input" step="0.5" min="0" value="${obt}" placeholder="45" required oninput="updateCounterAndAverages()">
       </td>
       <td>
-        <input type="number" class="total-input" step="0.5" min="0.5" placeholder="50" required>
+        <input type="number" class="total-input" step="0.5" min="0.5" value="${tot}" placeholder="50" required oninput="updateCounterAndAverages()">
+      </td>
+      <td style="text-align: center;">
+        <span class="pct-text">${pct}%</span>
       </td>
       <td style="text-align: center;">
         <button type="button" class="btn-delete" onclick="removeAcademicRow(this)">✕</button>
       </td>
     `;
-    updateCounter();
+    updateCounterAndAverages();
   }
 
   function removeAcademicRow(btn) {
@@ -1297,7 +1351,40 @@ body {
       return;
     }
     btn.closest('tr').remove();
-    updateCounter();
+    updateCounterAndAverages();
+  }
+
+  function saveAcademicDraft() {
+    const tableBody = document.getElementById('testTableBody');
+    const rows = tableBody.rows;
+    const dataList = [];
+    for (let i = 0; i < rows.length; i++) {
+      dataList.push({
+        category: rows[i].querySelector('.category-input').value,
+        subject: rows[i].querySelector('.subject-input').value,
+        obtained: rows[i].querySelector('.obtained-input').value,
+        total: rows[i].querySelector('.total-input').value
+      });
+    }
+    localStorage.setItem(ACADEMIC_DRAFT_KEY, JSON.stringify(dataList));
+    const st = document.getElementById('academicDraftStatus');
+    if (st) st.textContent = "Draft auto-saved locally";
+  }
+
+  function restoreAcademicDraft() {
+    const tableBody = document.getElementById('testTableBody');
+    tableBody.innerHTML = "";
+    const raw = localStorage.getItem(ACADEMIC_DRAFT_KEY);
+    if (raw) {
+      try {
+        const list = JSON.parse(raw);
+        if (Array.isArray(list) && list.length > 0) {
+          list.forEach(item => addAcademicRow(item));
+          return;
+        }
+      } catch (e) {}
+    }
+    addAcademicRow();
   }
 
   async function submitAcademicProgress() {
@@ -1349,15 +1436,12 @@ body {
     if (window.submitTenantFeedback) {
       const ok = await window.submitTenantFeedback("academic_tests", payload, "parent");
       if (ok) {
+        localStorage.removeItem(ACADEMIC_DRAFT_KEY);
         alert("🎉 Successfully pushed Academic Tests to KudozAI Server!");
       }
     } else {
       alert("Portal core handler window.submitTenantFeedback not found.");
     }
-  }
-
-  if (document.getElementById('testTableBody') && document.getElementById('testTableBody').rows.length === 0) {
-    addAcademicRow();
   }
 </script>
 
@@ -1556,8 +1640,8 @@ body {
 </div>
 
 <script>
-  window.MANIFEST = {"tenant_id": "tenant_9614932", "display_name": "Rayyan", "aw_last_synced": "2026-09-05T17:51:50.309636+00:00", "chart_days": ["2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05"], "chart_hours": [0.0, 0.0, 0.0, 0.0, 0.0, 1.07, 0.0], "top_apps_labels": ["chrome.exe", "LockApp.exe", "WinRAR.exe", "explorer.exe", "unknown"], "top_apps_values": [0.59, 0.48, 0.0, 0.0, 0.0], "compliance_grid": {"2026-08-30": {"tracker": false, "academic": false, "parent": false}, "2026-08-31": {"tracker": false, "academic": false, "parent": false}, "2026-09-01": {"tracker": false, "academic": false, "parent": false}, "2026-09-02": {"tracker": false, "academic": false, "parent": false}, "2026-09-03": {"tracker": false, "academic": false, "parent": false}, "2026-09-04": {"tracker": true, "academic": true, "parent": true}, "2026-09-05": {"tracker": false, "academic": false, "parent": false}}, "student_reports": [{"name": "Summary_For_Kids_2026-09-04", "file": "reports/Summary_For_Kids_2026-09-04.pdf.enc", "role": "student"}, {"name": "Summary_For_Kids_2026-09-05", "file": "reports/Summary_For_Kids_2026-09-05.pdf.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.student.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-05", "file": "reports/Weekly_Reward_Report_V2_2026-09-05.pdf.student.enc", "role": "student"}], "parent_reports": [{"name": "Productivity_Report_2026-09-04", "file": "reports/Productivity_Report_2026-09-04.pdf.enc", "role": "parent"}, {"name": "Productivity_Report_2026-09-05", "file": "reports/Productivity_Report_2026-09-05.pdf.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.parent.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-05", "file": "reports/Weekly_Reward_Report_V2_2026-09-05.pdf.parent.enc", "role": "parent"}]};
-  const ENV_CONFIG = {"tenant_id": "tenant_9614932", "core_repo": "nooraxollc-source/kudoz-ai-v3.1", "student_hash": "8d4ae214e53106c971e4822b86281088442ab3e28c1934b87f38471d0ae72cf7", "parent_hash": "9262a45fcad858645d5c33c64be7c914403acc455b4c8245169cd38c46f17683", "admin_pass": "Kudozaiadmin2026", "token_student": "1luYfwsaDi0Me5CJ33U02JkhnjX+1dNu5m4CDBERCuNhR/R33LIGD4pNsQs1tUsBabYYB3XkZRBAUQjiKfgJQk4WBkZeROmbnoVBipt6FCwHSmskyF9qhw0Tca7OBPsdm3VUVi4I29qpKoD7gAdYVg==", "token_parent": "csZfoC2BZVv4k3U43tY95NrJdBOGYm5brlSEUk1DE/PO4DECie5jtvmYsuK4aKO8qmUkycvuIC6HmPOVxt/2f/SViysJ+uxfMsje/NjjLrC+9OuZbrxLAnwVRD4DellzY4teEO0FLoR7Ma4hQoVpTQ==", "token_admin": "tD11Eeo/lOny0Faxyf/B/9OkuRQK5rTbUrSyHXgjuzHRlAONYX2ZsCGJVlIvmVk4zpA8E0sXDVVlnqY+7YB4gA2EycGOg7gtSDtp7Jdn0SwLD6P9vG8tOoTiqjTABFKHVOPaIC2ZyRWYFJyRbl9/Qw=="};
+  window.MANIFEST = {"tenant_id": "tenant_9614932", "display_name": "Rayyan", "aw_last_synced": "2026-09-05T19:38:00.307133+00:00", "chart_days": ["2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05"], "chart_hours": [0.0, 0.0, 0.0, 0.0, 0.0, 1.07, 0.0], "top_apps_labels": ["chrome.exe", "LockApp.exe", "WinRAR.exe", "explorer.exe", "unknown"], "top_apps_values": [0.59, 0.48, 0.0, 0.0, 0.0], "compliance_grid": {"2026-08-30": {"tracker": false, "academic": false, "parent": false}, "2026-08-31": {"tracker": false, "academic": false, "parent": false}, "2026-09-01": {"tracker": false, "academic": false, "parent": false}, "2026-09-02": {"tracker": false, "academic": false, "parent": false}, "2026-09-03": {"tracker": false, "academic": false, "parent": false}, "2026-09-04": {"tracker": true, "academic": true, "parent": true}, "2026-09-05": {"tracker": false, "academic": false, "parent": false}}, "student_reports": [{"name": "Summary_For_Kids_2026-09-04", "file": "reports/Summary_For_Kids_2026-09-04.pdf.enc", "role": "student"}, {"name": "Summary_For_Kids_2026-09-05", "file": "reports/Summary_For_Kids_2026-09-05.pdf.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.student.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-05", "file": "reports/Weekly_Reward_Report_V2_2026-09-05.pdf.student.enc", "role": "student"}], "parent_reports": [{"name": "Productivity_Report_2026-09-04", "file": "reports/Productivity_Report_2026-09-04.pdf.enc", "role": "parent"}, {"name": "Productivity_Report_2026-09-05", "file": "reports/Productivity_Report_2026-09-05.pdf.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.parent.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-05", "file": "reports/Weekly_Reward_Report_V2_2026-09-05.pdf.parent.enc", "role": "parent"}]};
+  const ENV_CONFIG = {"tenant_id": "tenant_9614932", "core_repo": "nooraxollc-source/kudoz-ai-v3.1", "student_hash": "8d4ae214e53106c971e4822b86281088442ab3e28c1934b87f38471d0ae72cf7", "parent_hash": "9262a45fcad858645d5c33c64be7c914403acc455b4c8245169cd38c46f17683", "admin_pass": "Kudozaiadmin2026", "token_student": "Q/0xK4bMlKsJ3vNowOvq9z/GdXyBveNdkw0i5AYMi+ciDx0ro2rzDn6VeZCQXRWV+mkz1Jg0Y8dqUvhk+IPIyFPegv9+kUviCp9u51jKT0N0RLbARcOTx2UsZRVD8jaPcmoc4+MXlFUq56ETHTWmfQ==", "token_parent": "0Z+nie2QCZOW+B6qcZaI7snSMv7IEdT0NBnB6s4ZbqiD1zHa/Nperq+DfOcNsmZv8RZFCEef2trUtqoxp5/IZcC+sd/yYHA/X3ET+lp61cXrmAbelvBznRIizL9pN1XB+VYJLWhmtMw9Laxy3DnH9g==", "token_admin": "APqfL6xvPzxlbchxJfsJFN3Gka/s1Fw0KZxzDmZVCMzFz3cb0PdjQ8s/J8x/kcVF+nMPbfz1YBWj7tx+fBuKXdr4m2liPMnMPe60CpmbfPJ69Gfsvbj3ar0Evr/6Pn7jRk8y5aFd53mQzutfUcUmQQ=="};
 </script>
 <script>
   let currentRole = null;
