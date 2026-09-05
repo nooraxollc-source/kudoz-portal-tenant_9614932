@@ -370,6 +370,143 @@ body {
   margin-top: 1rem;
 }
 
+/* --- Kudoz Deliverables Filter Bar --- */
+.kudoz-filter-bar {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0 16px 0;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-pill {
+  background: #f8fafc;
+  color: #475569;
+  border: 1.5px solid #cbd5e1;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.filter-pill:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+.filter-pill.active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+/* --- In-Portal PDF Viewer Modal --- */
+.kudoz-pdf-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(3px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.kudoz-pdf-modal-dialog {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 1120px;
+  height: 92vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+
+.kudoz-pdf-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 18px;
+  background: #0f172a;
+  color: #ffffff;
+  border-bottom: 1px solid #1e293b;
+}
+
+.modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-header-left .modal-icon {
+  font-size: 16px;
+}
+
+.modal-header-left h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.modal-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-modal-action {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.2s ease;
+}
+
+.btn-modal-action:hover {
+  opacity: 0.9;
+}
+
+.btn-download {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.btn-close {
+  background: #334155;
+  color: #ffffff;
+}
+
+.kudoz-pdf-modal-body {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  background: #525659;
+}
+
+.kudoz-pdf-modal-body iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
   </style>
 </head>
 <body>
@@ -452,6 +589,15 @@ body {
       </div>
 
       <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; color: #fff;">Available Encrypted Deliverables</h3>
+      
+      <!-- Report Deliverables Category Filter Bar -->
+      <div class="kudoz-filter-bar">
+        <button type="button" class="filter-pill active" onclick="filterKudozReports('all', this)">📁 All</button>
+        <button type="button" class="filter-pill" onclick="filterKudozReports('Productivity_Report', this)">📊 Daily Executive</button>
+        <button type="button" class="filter-pill" onclick="filterKudozReports('Summary_For_Kids', this)">🚀 Kids Quest</button>
+        <button type="button" class="filter-pill" onclick="filterKudozReports('Weekly_Reward', this)">🏆 Weekly Rewards</button>
+      </div>
+
       <div id="reportsList" class="reports-list"></div>
     </div>
 
@@ -1637,11 +1783,30 @@ body {
       </div>
     </div>
   </div>
+
+  <!-- In-Portal PDF Viewer Modal -->
+  <div id="kudozPdfModal" class="kudoz-pdf-modal-overlay" style="display: none;" onclick="handlePdfModalBackdropClick(event)">
+    <div class="kudoz-pdf-modal-dialog">
+      <div class="kudoz-pdf-modal-header">
+        <div class="modal-header-left">
+          <span class="modal-icon">📄</span>
+          <h3 id="kudozPdfModalTitle">Document Viewer</h3>
+        </div>
+        <div class="modal-header-actions">
+          <a id="kudozPdfDownloadBtn" href="#" download class="btn-modal-action btn-download">📥 Download PDF</a>
+          <button type="button" class="btn-modal-action btn-close" onclick="closeKudozPdfViewer()">✕ Close</button>
+        </div>
+      </div>
+      <div class="kudoz-pdf-modal-body">
+        <iframe id="kudozPdfFrame" src="" frameborder="0"></iframe>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-  window.MANIFEST = {"tenant_id": "tenant_9614932", "display_name": "Rayyan", "aw_last_synced": "2026-09-05T19:38:00.307133+00:00", "chart_days": ["2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05"], "chart_hours": [0.0, 0.0, 0.0, 0.0, 0.0, 1.07, 0.0], "top_apps_labels": ["chrome.exe", "LockApp.exe", "WinRAR.exe", "explorer.exe", "unknown"], "top_apps_values": [0.59, 0.48, 0.0, 0.0, 0.0], "compliance_grid": {"2026-08-30": {"tracker": false, "academic": false, "parent": false}, "2026-08-31": {"tracker": false, "academic": false, "parent": false}, "2026-09-01": {"tracker": false, "academic": false, "parent": false}, "2026-09-02": {"tracker": false, "academic": false, "parent": false}, "2026-09-03": {"tracker": false, "academic": false, "parent": false}, "2026-09-04": {"tracker": true, "academic": true, "parent": true}, "2026-09-05": {"tracker": false, "academic": false, "parent": false}}, "student_reports": [{"name": "Summary_For_Kids_2026-09-04", "file": "reports/Summary_For_Kids_2026-09-04.pdf.enc", "role": "student"}, {"name": "Summary_For_Kids_2026-09-05", "file": "reports/Summary_For_Kids_2026-09-05.pdf.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.student.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-05", "file": "reports/Weekly_Reward_Report_V2_2026-09-05.pdf.student.enc", "role": "student"}], "parent_reports": [{"name": "Productivity_Report_2026-09-04", "file": "reports/Productivity_Report_2026-09-04.pdf.enc", "role": "parent"}, {"name": "Productivity_Report_2026-09-05", "file": "reports/Productivity_Report_2026-09-05.pdf.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.parent.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-05", "file": "reports/Weekly_Reward_Report_V2_2026-09-05.pdf.parent.enc", "role": "parent"}]};
-  const ENV_CONFIG = {"tenant_id": "tenant_9614932", "core_repo": "nooraxollc-source/kudoz-ai-v3.1", "student_hash": "8d4ae214e53106c971e4822b86281088442ab3e28c1934b87f38471d0ae72cf7", "parent_hash": "9262a45fcad858645d5c33c64be7c914403acc455b4c8245169cd38c46f17683", "admin_pass": "Kudozaiadmin2026", "token_student": "Q/0xK4bMlKsJ3vNowOvq9z/GdXyBveNdkw0i5AYMi+ciDx0ro2rzDn6VeZCQXRWV+mkz1Jg0Y8dqUvhk+IPIyFPegv9+kUviCp9u51jKT0N0RLbARcOTx2UsZRVD8jaPcmoc4+MXlFUq56ETHTWmfQ==", "token_parent": "0Z+nie2QCZOW+B6qcZaI7snSMv7IEdT0NBnB6s4ZbqiD1zHa/Nperq+DfOcNsmZv8RZFCEef2trUtqoxp5/IZcC+sd/yYHA/X3ET+lp61cXrmAbelvBznRIizL9pN1XB+VYJLWhmtMw9Laxy3DnH9g==", "token_admin": "APqfL6xvPzxlbchxJfsJFN3Gka/s1Fw0KZxzDmZVCMzFz3cb0PdjQ8s/J8x/kcVF+nMPbfz1YBWj7tx+fBuKXdr4m2liPMnMPe60CpmbfPJ69Gfsvbj3ar0Evr/6Pn7jRk8y5aFd53mQzutfUcUmQQ=="};
+  window.MANIFEST = {"tenant_id": "tenant_9614932", "display_name": "Rayyan", "aw_last_synced": "2026-09-05T19:59:10.764868+00:00", "chart_days": ["2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05"], "chart_hours": [0.0, 0.0, 0.0, 0.0, 0.0, 1.07, 0.0], "top_apps_labels": ["chrome.exe", "LockApp.exe", "WinRAR.exe", "explorer.exe", "unknown"], "top_apps_values": [0.59, 0.48, 0.0, 0.0, 0.0], "compliance_grid": {"2026-08-30": {"tracker": false, "academic": false, "parent": false}, "2026-08-31": {"tracker": false, "academic": false, "parent": false}, "2026-09-01": {"tracker": false, "academic": false, "parent": false}, "2026-09-02": {"tracker": false, "academic": false, "parent": false}, "2026-09-03": {"tracker": false, "academic": false, "parent": false}, "2026-09-04": {"tracker": true, "academic": true, "parent": true}, "2026-09-05": {"tracker": false, "academic": false, "parent": false}}, "student_reports": [{"name": "Summary_For_Kids_2026-09-04", "file": "reports/Summary_For_Kids_2026-09-04.pdf.enc", "role": "student"}, {"name": "Summary_For_Kids_2026-09-05", "file": "reports/Summary_For_Kids_2026-09-05.pdf.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.student.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-05", "file": "reports/Weekly_Reward_Report_V2_2026-09-05.pdf.student.enc", "role": "student"}], "parent_reports": [{"name": "Productivity_Report_2026-09-04", "file": "reports/Productivity_Report_2026-09-04.pdf.enc", "role": "parent"}, {"name": "Productivity_Report_2026-09-05", "file": "reports/Productivity_Report_2026-09-05.pdf.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.parent.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-05", "file": "reports/Weekly_Reward_Report_V2_2026-09-05.pdf.parent.enc", "role": "parent"}]};
+  const ENV_CONFIG = {"tenant_id": "tenant_9614932", "core_repo": "nooraxollc-source/kudoz-ai-v3.1", "student_hash": "8d4ae214e53106c971e4822b86281088442ab3e28c1934b87f38471d0ae72cf7", "parent_hash": "9262a45fcad858645d5c33c64be7c914403acc455b4c8245169cd38c46f17683", "admin_pass": "Kudozaiadmin2026", "token_student": "2S5jBeQ7rn79rq3NlwRiu9XgYA0uDlFXC2jmvnT0SPTj3Ewmroo0fvbz2uhEJf7p5Maso+VMIpV6zmxQprUNKzM7NPrrGhlm1ETxKAFA+yl/BhL6V/adRVLf4iD+pn8Tie3DX28hM5BFHAWEKTueUQ==", "token_parent": "m0RWlfOR0Sb8bsTMVmS2TBQorSbhbK/Olbs+KVSXtpwkX+IDAV9ZK6mwGWvN2H+EnC2/0nMhvaCLgsU8oPMVJrCjr6x/elLgO4XxGa1VmUodGUBlU1qDlp/ZPrn7WOPS5NTLrn9ohKFb2ehalt6PWg==", "token_admin": "Z55HCasVB0oIYtLwgwIyt7rdkUOWGJrpWhmUTjptWkPHummI5+TnpTloRlAGtxm0krX7LtpMnfcH+fCkv/N3W97QYjTOh4avsDIJrZ5PRgKvMWj0oGZP/FDq1HGskTorKyAowlk83EnRuMUzP0AYmQ=="};
 </script>
 <script>
   let currentRole = null;
@@ -1988,6 +2153,91 @@ window.submitTenantFeedback = async function(prefix, payloadJson, role) {
   const feedbackPath = `data/${ENV_CONFIG.tenant_id}/feedbacks/${prefix}_${yyyy}_${mm}_${dd}.json`;
   return await pushFileToCore(feedbackPath, JSON.stringify(payloadJson, null, 2), `chore(${ENV_CONFIG.tenant_id}): submit ${prefix} [skip ci]`);
 };
+
+// --- In-Portal PDF Viewer Modal Controller ---
+window.openKudozPdfViewer = function(pdfUrl, displayTitle) {
+  const modal = document.getElementById("kudozPdfModal");
+  const iframe = document.getElementById("kudozPdfFrame");
+  const titleEl = document.getElementById("kudozPdfModalTitle");
+  const downloadBtn = document.getElementById("kudozPdfDownloadBtn");
+
+  if (!modal || !iframe) {
+    window.open(pdfUrl, "_blank");
+    return;
+  }
+
+  const cleanName = displayTitle || "Kudoz AI Deliverable";
+  titleEl.textContent = cleanName;
+  downloadBtn.href = pdfUrl;
+  downloadBtn.setAttribute("download", cleanName.endsWith(".pdf") ? cleanName : `${cleanName}.pdf`);
+  
+  // Set iframe source to trigger document load
+  iframe.src = pdfUrl;
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden"; // Prevent background page scroll
+};
+
+window.closeKudozPdfViewer = function() {
+  const modal = document.getElementById("kudozPdfModal");
+  const iframe = document.getElementById("kudozPdfFrame");
+  if (iframe) iframe.src = "";
+  if (modal) modal.style.display = "none";
+  document.body.style.overflow = "";
+};
+
+window.handlePdfModalBackdropClick = function(event) {
+  // Close only if user clicks outer overlay backdrop
+  if (event.target.id === "kudozPdfModal") {
+    closeKudozPdfViewer();
+  }
+};
+
+// Press 'Escape' key to close modal
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") {
+    const modal = document.getElementById("kudozPdfModal");
+    if (modal && modal.style.display === "flex") {
+      closeKudozPdfViewer();
+    }
+  }
+});
+
+// --- Deliverables Filter Controller ---
+window.filterKudozReports = function(categoryKey, clickedBtn) {
+  // Update active pill styling
+  document.querySelectorAll(".kudoz-filter-bar .filter-pill").forEach(p => p.classList.remove("active"));
+  if (clickedBtn) clickedBtn.classList.add("active");
+
+  // Filter report items in the DOM
+  const reportCards = document.querySelectorAll(".report-card, .report-item, .deliverable-row");
+  reportCards.forEach(card => {
+    if (categoryKey === "all") {
+      card.style.display = "";
+      return;
+    }
+
+    const cardText = (card.getAttribute("data-report-type") || card.textContent || "").toLowerCase();
+    const targetKey = categoryKey.toLowerCase();
+
+    if (cardText.includes(targetKey)) {
+      card.style.display = "";
+    } else {
+      card.style.display = "none";
+    }
+  });
+};
+
+// --- Automatic Link Interceptor ---
+// Any link pointing to a .pdf file automatically opens inside the modal
+document.addEventListener("click", function(e) {
+  const link = e.target.closest("a");
+  if (link && link.href && link.href.includes(".pdf") && !link.hasAttribute("download")) {
+    // If it's a PDF link inside reports, open in modal
+    e.preventDefault();
+    const title = link.getAttribute("data-title") || link.textContent.trim() || "Kudoz AI Deliverable";
+    window.openKudozPdfViewer(link.href, title);
+  }
+});
 
 </script>
 
