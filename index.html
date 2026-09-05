@@ -672,6 +672,22 @@ body {
     color: #2563eb;
     font-weight: 700;
   }
+
+  /* Sub-grid for real-world offline inputs */
+  .sub-grid-3 {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .sub-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  @media (max-width: 600px) {
+    .sub-grid-3, .sub-grid-2 { grid-template-columns: 1fr; }
+  }
+
   .btn-submit-action {
     width: 100%;
     margin-top: 1.25rem;
@@ -685,6 +701,12 @@ body {
     border: none;
   }
   .btn-submit-action:hover { background: #1d4ed8; }
+  .draft-indicator {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-align: right;
+    margin-top: 0.4rem;
+  }
 </style>
 
 <div class="kudoz-tracker-container">
@@ -783,8 +805,39 @@ body {
         <label for="trackerQ5">5. Have you learnt new thing that outclass, elaborate:</label>
         <input type="text" id="trackerQ5" class="input-box" placeholder="One new tool, skill, concept learned today..." required />
       </div>
+
+      <!-- Real-World Offline & 3-Bucket Balance -->
+      <div class="q-card">
+        <label>6. Offline Hands-On Hobbies & Maker Crafts (Bucket A):</label>
+        <div class="sub-grid-3">
+          <input type="text" id="trackerHobbyDesc" class="input-box" placeholder="e.g. Arduino circuit prototyping, paper sketch, reading..." />
+          <select id="trackerHobbyCategory" class="input-box">
+            <option value="Hardware / Robotics">Hardware / Robotics</option>
+            <option value="Reading / Book">Reading / Paper Book</option>
+            <option value="Science / Experiment">Science / Experiment</option>
+            <option value="Art / Music / Craft">Art / Music / Craft</option>
+            <option value="None" selected>None Today</option>
+          </select>
+          <input type="number" id="trackerHobbyHours" class="input-box" step="0.5" min="0" max="12" placeholder="Hours (e.g. 1.5)" />
+        </div>
+      </div>
+
+      <div class="q-card">
+        <label>7. Healthy Leisure & Off-Screen Gaming (Buckets B & C):</label>
+        <div class="sub-grid-2">
+          <input type="text" id="trackerLeisureDesc" class="input-box" placeholder="Bucket B: Sports, cycling, family walking..." />
+          <select id="trackerOfflineGaming" class="input-box">
+            <option value="0.0">Bucket C Gaming: Zero / Screen-Free</option>
+            <option value="0.5">Bucket C Gaming: 0.5 hr (30 mins)</option>
+            <option value="1.0">Bucket C Gaming: 1.0 hr</option>
+            <option value="2.0">Bucket C Gaming: 2.0 hrs (Heavy)</option>
+            <option value="3.0">Bucket C Gaming: 3.0+ hrs (Intense)</option>
+          </select>
+        </div>
+      </div>
     </div>
 
+    <div id="trackerDraftStatus" class="draft-indicator">Draft auto-saves locally</div>
     <button type="submit" id="btnTrackerSubmit" class="btn-submit-action">
       🚀 Submit Daily Progress Questionnaire
     </button>
@@ -793,13 +846,82 @@ body {
 
 <script>
   let loadedAWJson = null;
+  const TRACKER_DRAFT_KEY = "kudoz_v31_tracker_draft";
 
   (function() {
     const dInput = document.getElementById('trackerDate');
     if (dInput) dInput.valueAsDate = new Date();
     setupDropZone();
     updateAWStatusBadge();
+    restoreTrackerDraft();
+    bindTrackerAutoSave();
   })();
+
+  function bindTrackerAutoSave() {
+    const fields = [
+      'trackerStudentName', 'trackerQ1', 'trackerQ2', 'trackerQ5',
+      'trackerHobbyDesc', 'trackerHobbyCategory', 'trackerHobbyHours',
+      'trackerLeisureDesc', 'trackerOfflineGaming'
+    ];
+    fields.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', saveTrackerDraft);
+        el.addEventListener('change', saveTrackerDraft);
+      }
+    });
+    document.querySelectorAll('input[name="tracker_q3_status"], input[name="tracker_q4_deadlines"]').forEach(r => {
+      r.addEventListener('change', saveTrackerDraft);
+    });
+  }
+
+  function saveTrackerDraft() {
+    const q3 = document.querySelector('input[name="tracker_q3_status"]:checked');
+    const q4 = document.querySelector('input[name="tracker_q4_deadlines"]:checked');
+    const draft = {
+      name: document.getElementById('trackerStudentName').value,
+      q1: document.getElementById('trackerQ1').value,
+      q2: document.getElementById('trackerQ2').value,
+      q3: q3 ? q3.value : null,
+      q4: q4 ? q4.value : null,
+      q5: document.getElementById('trackerQ5').value,
+      hobbyDesc: document.getElementById('trackerHobbyDesc').value,
+      hobbyCat: document.getElementById('trackerHobbyCategory').value,
+      hobbyHours: document.getElementById('trackerHobbyHours').value,
+      leisureDesc: document.getElementById('trackerLeisureDesc').value,
+      offlineGaming: document.getElementById('trackerOfflineGaming').value
+    };
+    localStorage.setItem(TRACKER_DRAFT_KEY, JSON.stringify(draft));
+    const st = document.getElementById('trackerDraftStatus');
+    if (st) st.textContent = "Draft auto-saved locally";
+  }
+
+  function restoreTrackerDraft() {
+    const raw = localStorage.getItem(TRACKER_DRAFT_KEY);
+    if (!raw) return;
+    try {
+      const d = JSON.parse(raw);
+      if (d.name) document.getElementById('trackerStudentName').value = d.name;
+      if (d.q1) document.getElementById('trackerQ1').value = d.q1;
+      if (d.q2) document.getElementById('trackerQ2').value = d.q2;
+      if (d.q5) document.getElementById('trackerQ5').value = d.q5;
+      if (d.hobbyDesc) document.getElementById('trackerHobbyDesc').value = d.hobbyDesc;
+      if (d.hobbyCat) document.getElementById('trackerHobbyCategory').value = d.hobbyCat;
+      if (d.hobbyHours) document.getElementById('trackerHobbyHours').value = d.hobbyHours;
+      if (d.leisureDesc) document.getElementById('trackerLeisureDesc').value = d.leisureDesc;
+      if (d.offlineGaming) document.getElementById('trackerOfflineGaming').value = d.offlineGaming;
+      if (d.q3) {
+        const r = document.querySelector(`input[name="tracker_q3_status"][value="${d.q3}"]`);
+        if (r) r.checked = true;
+      }
+      if (d.q4) {
+        const r = document.querySelector(`input[name="tracker_q4_deadlines"][value="${d.q4}"]`);
+        if (r) r.checked = true;
+      }
+      const st = document.getElementById('trackerDraftStatus');
+      if (st) st.textContent = "Restored draft from browser storage";
+    } catch (e) {}
+  }
 
   function formatToClientTime(isoUtcString) {
     if (!isoUtcString) return null;
@@ -939,6 +1061,12 @@ body {
     const q4 = document.querySelector('input[name="tracker_q4_deadlines"]:checked').value;
     const q5 = document.getElementById('trackerQ5').value.trim() || 'Standard work completed';
 
+    const hobbyDesc = document.getElementById('trackerHobbyDesc').value.trim() || "None";
+    const hobbyCat = document.getElementById('trackerHobbyCategory').value;
+    const hobbyHours = parseFloat(document.getElementById('trackerHobbyHours').value) || 0.0;
+    const leisureDesc = document.getElementById('trackerLeisureDesc').value.trim() || "None";
+    const offlineGaming = parseFloat(document.getElementById('trackerOfflineGaming').value) || 0.0;
+
     const trackerPayload = {
       meta: { student_name: name, submission_date: date, created_at: new Date().toISOString() },
       responses: {
@@ -946,7 +1074,14 @@ body {
         plan_finalized_for_tomorrow: q2,
         work_completed_as_per_today_plan: q3,
         overall_deadlines_status: q4,
-        outclass_learning_elaborated: q5
+        outclass_learning_elaborated: q5,
+        offline_activities: {
+          hands_on_hobbies: hobbyDesc,
+          hobby_category: hobbyCat,
+          hobby_hours: hobbyHours,
+          healthy_leisure: leisureDesc,
+          offscreen_gaming_hours: offlineGaming
+        }
       }
     };
 
@@ -955,6 +1090,7 @@ body {
       if (success) {
         const nowIso = new Date().toISOString();
         if (loadedAWJson && window.MANIFEST) window.MANIFEST.aw_last_synced = nowIso;
+        localStorage.removeItem(TRACKER_DRAFT_KEY);
         alert("🎉 Successfully submitted Daily Tracker" + (loadedAWJson ? " & Screen Time" : "") + " to KudozAI Server!");
         updateAWStatusBadge();
       } else {
@@ -1250,6 +1386,7 @@ body {
     margin-bottom: 4px;
   }
   .kudoz-parent-feedback-container input,
+  .kudoz-parent-feedback-container select,
   .kudoz-parent-feedback-container textarea {
     width: 100%;
     padding: 8px 10px;
@@ -1277,6 +1414,12 @@ body {
   .kudoz-parent-feedback-container .btn-submit-action:hover {
     background: #be185d;
   }
+  .parent-draft-indicator {
+    font-size: 12px;
+    color: #64748b;
+    text-align: right;
+    margin-top: 6px;
+  }
 </style>
 
 <div class="kudoz-parent-feedback-container">
@@ -1285,16 +1428,25 @@ body {
     <label>Review Date (Saturday):</label>
     <input type="date" id="parentReviewDate" required>
 
+    <label>Agreed Weekly Reward / Milestone Incentive (Optional):</label>
+    <input type="text" id="agreedReward" placeholder="e.g. Weekend camping trip, Arduino sensor kit, 2h gaming">
+
     <label>Mother's Discipline & Attitude Rating (1-10):</label>
-    <input type="number" id="motherScore" min="1" max="10" placeholder="Score / 10" required>
+    <input type="number" id="motherScore" min="1" max="10" step="0.5" placeholder="Score / 10" required>
     <label>Mother's Observations & Notes:</label>
     <textarea id="motherNotes" placeholder="e.g. Completed daily studies on time, respectful attitude."></textarea>
 
     <label>Father's Focus & Routine Rating (1-10):</label>
-    <input type="number" id="fatherScore" min="1" max="10" placeholder="Score / 10" required>
+    <input type="number" id="fatherScore" min="1" max="10" step="0.5" placeholder="Score / 10" required>
     <label>Father's Observations & Notes:</label>
     <textarea id="fatherNotes" placeholder="e.g. Practiced problem sets without reminders. Great routine."></textarea>
 
+    <label>Screen-Free Balance & Offline Conduct Rating (1-10):</label>
+    <input type="number" id="balanceScore" min="1" max="10" step="0.5" placeholder="Score / 10 (Offline sports, crafts & routine)">
+    <label>Observations on Real-World Balance & Hobbies:</label>
+    <textarea id="balanceNotes" placeholder="Did the student balance screens with physical hobbies, crafts, or reading?"></textarea>
+
+    <div id="parentDraftStatus" class="parent-draft-indicator">Draft auto-saves locally</div>
     <button type="submit" class="btn-submit-action">
       🚀 Push Parent Feedback to KudozAI Server
     </button>
@@ -1302,10 +1454,53 @@ body {
 </div>
 
 <script>
+  const PARENT_DRAFT_KEY = "kudoz_v31_parent_draft";
+
   (function() {
     const dInput = document.getElementById('parentReviewDate');
     if (dInput) dInput.valueAsDate = new Date();
+    restoreParentDraft();
+    bindParentAutoSave();
   })();
+
+  function bindParentAutoSave() {
+    ['agreedReward', 'motherScore', 'motherNotes', 'fatherScore', 'fatherNotes', 'balanceScore', 'balanceNotes'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', saveParentDraft);
+        el.addEventListener('change', saveParentDraft);
+      }
+    });
+  }
+
+  function saveParentDraft() {
+    const draft = {
+      agreedReward: document.getElementById('agreedReward').value,
+      motherScore: document.getElementById('motherScore').value,
+      motherNotes: document.getElementById('motherNotes').value,
+      fatherScore: document.getElementById('fatherScore').value,
+      fatherNotes: document.getElementById('fatherNotes').value,
+      balanceScore: document.getElementById('balanceScore').value,
+      balanceNotes: document.getElementById('balanceNotes').value
+    };
+    localStorage.setItem(PARENT_DRAFT_KEY, JSON.stringify(draft));
+    const st = document.getElementById('parentDraftStatus');
+    if (st) st.textContent = "Draft auto-saved locally";
+  }
+
+  function restoreParentDraft() {
+    const raw = localStorage.getItem(PARENT_DRAFT_KEY);
+    if (!raw) return;
+    try {
+      const d = JSON.parse(raw);
+      for (const k in d) {
+        const el = document.getElementById(k);
+        if (el && d[k]) el.value = d[k];
+      }
+      const st = document.getElementById('parentDraftStatus');
+      if (st) st.textContent = "Restored draft from browser storage";
+    } catch(e) {}
+  }
 
   async function submitParentFeedback() {
     const confirmed = confirm("Do you want to push your weekly feedback to KudozAI Server?");
@@ -1314,6 +1509,7 @@ body {
     const dateVal = document.getElementById('parentReviewDate').value;
     const mScore = parseFloat(document.getElementById('motherScore').value);
     const fScore = parseFloat(document.getElementById('fatherScore').value);
+    const bScore = parseFloat(document.getElementById('balanceScore').value) || 8.0;
 
     if (isNaN(mScore) || isNaN(fScore)) {
       alert("Please provide both Mother and Father ratings out of 10.");
@@ -1323,6 +1519,9 @@ body {
     const payload = {
       type: "weekly_parent_feedback",
       date: dateVal,
+      contract: {
+        agreed_weekly_reward: document.getElementById('agreedReward').value.trim() || "Standard Weekly Honors"
+      },
       mother_evaluation: {
         score_out_of_10: mScore,
         notes: document.getElementById('motherNotes').value.trim()
@@ -1330,12 +1529,18 @@ body {
       father_evaluation: {
         score_out_of_10: fScore,
         notes: document.getElementById('fatherNotes').value.trim()
-      }
+      },
+      offline_conduct_verification: {
+        screen_free_balance_score: bScore,
+        notes: document.getElementById('balanceNotes').value.trim() || "Balanced routine observed."
+      },
+      real_world_balance_notes: document.getElementById('balanceNotes').value.trim()
     };
 
     if (window.submitTenantFeedback) {
       const ok = await window.submitTenantFeedback("parent_feedback", payload, "parent");
       if (ok) {
+        localStorage.removeItem(PARENT_DRAFT_KEY);
         alert("🎉 Successfully pushed Parent Feedback to KudozAI Server!");
       }
     } else {
@@ -1351,8 +1556,8 @@ body {
 </div>
 
 <script>
-  window.MANIFEST = {"tenant_id": "tenant_9614932", "display_name": "Rayyan", "aw_last_synced": "2026-09-04T17:51:53.471203+00:00", "chart_days": ["2026-08-29", "2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04"], "chart_hours": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.07], "top_apps_labels": ["chrome.exe", "LockApp.exe", "WinRAR.exe", "explorer.exe", "unknown"], "top_apps_values": [0.59, 0.48, 0.0, 0.0, 0.0], "compliance_grid": {"2026-08-29": {"tracker": false, "academic": false, "parent": false}, "2026-08-30": {"tracker": false, "academic": false, "parent": false}, "2026-08-31": {"tracker": false, "academic": false, "parent": false}, "2026-09-01": {"tracker": false, "academic": false, "parent": false}, "2026-09-02": {"tracker": false, "academic": false, "parent": false}, "2026-09-03": {"tracker": false, "academic": false, "parent": false}, "2026-09-04": {"tracker": true, "academic": true, "parent": true}}, "student_reports": [{"name": "Summary_For_Kids_2026-09-04", "file": "reports/Summary_For_Kids_2026-09-04.pdf.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.student.enc", "role": "student"}], "parent_reports": [{"name": "Productivity_Report_2026-09-04", "file": "reports/Productivity_Report_2026-09-04.pdf.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.parent.enc", "role": "parent"}]};
-  const ENV_CONFIG = {"tenant_id": "tenant_9614932", "core_repo": "nooraxollc-source/kudoz-ai-v3.1", "student_hash": "8d4ae214e53106c971e4822b86281088442ab3e28c1934b87f38471d0ae72cf7", "parent_hash": "9262a45fcad858645d5c33c64be7c914403acc455b4c8245169cd38c46f17683", "admin_pass": "Kudozaiadmin2026", "token_student": "LDzAjzMEd+Sp6PLRBTxioAgI2woh/2CngbmvjG4KsPf8TC77RJhLDL8qGZqcTQhXJExYVkgi99OOOoKRV48INDSQ7WN1YxeK/aJZuF9yL2yJPZS1SDqMlBBULKresF/ZR6nSMfc7DdYywzxwYya4zQ==", "token_parent": "XjsfcU3kBvJ6zzpAlPPLlidjcE4EKsdoxltGxLYavatRuA26vMZ9to+1LuBocMhquqZF6TkzAzk5bzp7TvFXbKx6AXnmiyiQqtrZKLf7qX57sR++jq5HCSzlMVc8NeTjEiUwmXdQDnqaejsvksWu0g==", "token_admin": "hhCcUYh055qIbJF2QXfWzLWzmc5m0FPg1sbpMbl9kZ2sFRk9Cb1nl5bKaEMiAKfFYFEYGsKVbS9wXgSuiK8yUjSvEbcHYmqLNiB+nnoes3QHNCwqBXOCuYp2MMdq/R6QaMEBci2kQXhYncom5dK13Q=="};
+  window.MANIFEST = {"tenant_id": "tenant_9614932", "display_name": "Rayyan", "aw_last_synced": "2026-09-05T17:51:50.309636+00:00", "chart_days": ["2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05"], "chart_hours": [0.0, 0.0, 0.0, 0.0, 0.0, 1.07, 0.0], "top_apps_labels": ["chrome.exe", "LockApp.exe", "WinRAR.exe", "explorer.exe", "unknown"], "top_apps_values": [0.59, 0.48, 0.0, 0.0, 0.0], "compliance_grid": {"2026-08-30": {"tracker": false, "academic": false, "parent": false}, "2026-08-31": {"tracker": false, "academic": false, "parent": false}, "2026-09-01": {"tracker": false, "academic": false, "parent": false}, "2026-09-02": {"tracker": false, "academic": false, "parent": false}, "2026-09-03": {"tracker": false, "academic": false, "parent": false}, "2026-09-04": {"tracker": true, "academic": true, "parent": true}, "2026-09-05": {"tracker": false, "academic": false, "parent": false}}, "student_reports": [{"name": "Summary_For_Kids_2026-09-04", "file": "reports/Summary_For_Kids_2026-09-04.pdf.enc", "role": "student"}, {"name": "Summary_For_Kids_2026-09-05", "file": "reports/Summary_For_Kids_2026-09-05.pdf.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.student.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-05", "file": "reports/Weekly_Reward_Report_V2_2026-09-05.pdf.student.enc", "role": "student"}], "parent_reports": [{"name": "Productivity_Report_2026-09-04", "file": "reports/Productivity_Report_2026-09-04.pdf.enc", "role": "parent"}, {"name": "Productivity_Report_2026-09-05", "file": "reports/Productivity_Report_2026-09-05.pdf.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.parent.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-05", "file": "reports/Weekly_Reward_Report_V2_2026-09-05.pdf.parent.enc", "role": "parent"}]};
+  const ENV_CONFIG = {"tenant_id": "tenant_9614932", "core_repo": "nooraxollc-source/kudoz-ai-v3.1", "student_hash": "8d4ae214e53106c971e4822b86281088442ab3e28c1934b87f38471d0ae72cf7", "parent_hash": "9262a45fcad858645d5c33c64be7c914403acc455b4c8245169cd38c46f17683", "admin_pass": "Kudozaiadmin2026", "token_student": "1luYfwsaDi0Me5CJ33U02JkhnjX+1dNu5m4CDBERCuNhR/R33LIGD4pNsQs1tUsBabYYB3XkZRBAUQjiKfgJQk4WBkZeROmbnoVBipt6FCwHSmskyF9qhw0Tca7OBPsdm3VUVi4I29qpKoD7gAdYVg==", "token_parent": "csZfoC2BZVv4k3U43tY95NrJdBOGYm5brlSEUk1DE/PO4DECie5jtvmYsuK4aKO8qmUkycvuIC6HmPOVxt/2f/SViysJ+uxfMsje/NjjLrC+9OuZbrxLAnwVRD4DellzY4teEO0FLoR7Ma4hQoVpTQ==", "token_admin": "tD11Eeo/lOny0Faxyf/B/9OkuRQK5rTbUrSyHXgjuzHRlAONYX2ZsCGJVlIvmVk4zpA8E0sXDVVlnqY+7YB4gA2EycGOg7gtSDtp7Jdn0SwLD6P9vG8tOoTiqjTABFKHVOPaIC2ZyRWYFJyRbl9/Qw=="};
 </script>
 <script>
   let currentRole = null;
