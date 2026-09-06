@@ -591,12 +591,12 @@ body {
       <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; color: #fff;">Available Encrypted Deliverables</h3>
       
       <!-- Report Deliverables Category Filter Bar -->
-      <div class="kudoz-filter-bar">
-        <button type="button" class="filter-pill active" onclick="filterKudozReports('all', this)">📁 All</button>
-        <button type="button" class="filter-pill" onclick="filterKudozReports('Productivity_Report', this)">📊 Daily Executive</button>
-        <button type="button" class="filter-pill" onclick="filterKudozReports('Summary_For_Kids', this)">🚀 Kids Quest</button>
-        <button type="button" class="filter-pill" onclick="filterKudozReports('Weekly_Reward', this)">🏆 Weekly Rewards</button>
-      </div>
+     
+      <div class="kudoz-filter-bar" style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem;">
+  <button class="filter-pill active" data-target="executive" onclick="filterKudozReports('executive', this)"> 📊 Executive Reports</button>
+  <button class="filter-pill" data-target="student" onclick="filterKudozReports('student', this)"> 🚀 Student Summaries</button>
+  <button class="filter-pill" data-target="weekly" onclick="filterKudozReports('weekly', this)">🏆 Weekly Rewards</button>
+</div>
 
       <div id="reportsList" class="reports-list"></div>
     </div>
@@ -1805,8 +1805,8 @@ body {
 </div>
 
 <script>
-  window.MANIFEST = {"tenant_id": "tenant_9614932", "display_name": "Rayyan", "aw_last_synced": "2026-09-06T09:52:56.637343+00:00", "chart_days": ["2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05", "2026-09-06"], "chart_hours": [0.0, 0.0, 0.0, 0.0, 1.07, 0.0, 0.0], "top_apps_labels": ["chrome.exe", "LockApp.exe", "WinRAR.exe", "explorer.exe", "unknown"], "top_apps_values": [0.59, 0.48, 0.0, 0.0, 0.0], "compliance_grid": {"2026-08-31": {"tracker": false, "academic": false, "parent": false}, "2026-09-01": {"tracker": false, "academic": false, "parent": false}, "2026-09-02": {"tracker": false, "academic": false, "parent": false}, "2026-09-03": {"tracker": false, "academic": false, "parent": false}, "2026-09-04": {"tracker": true, "academic": true, "parent": true}, "2026-09-05": {"tracker": false, "academic": false, "parent": false}, "2026-09-06": {"tracker": false, "academic": true, "parent": false}}, "student_reports": [{"name": "Summary_For_Kids_2026-09-04", "file": "reports/Summary_For_Kids_2026-09-04.pdf.enc", "role": "student"}, {"name": "Summary_For_Kids_2026-09-05", "file": "reports/Summary_For_Kids_2026-09-05.pdf.enc", "role": "student"}, {"name": "Summary_For_Kids_2026-09-06", "file": "reports/Summary_For_Kids_2026-09-06.pdf.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.student.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-05", "file": "reports/Weekly_Reward_Report_V2_2026-09-05.pdf.student.enc", "role": "student"}], "parent_reports": [{"name": "Productivity_Report_2026-09-04", "file": "reports/Productivity_Report_2026-09-04.pdf.enc", "role": "parent"}, {"name": "Productivity_Report_2026-09-05", "file": "reports/Productivity_Report_2026-09-05.pdf.enc", "role": "parent"}, {"name": "Productivity_Report_2026-09-06", "file": "reports/Productivity_Report_2026-09-06.pdf.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.parent.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-05", "file": "reports/Weekly_Reward_Report_V2_2026-09-05.pdf.parent.enc", "role": "parent"}]};
-  const ENV_CONFIG = {"tenant_id": "tenant_9614932", "core_repo": "nooraxollc-source/kudoz-ai-v3.1", "student_hash": "264c8c381bf16c982a4e59b0dd4c6f7808c51a05f64c35db42cc78a2a72875bb", "parent_hash": "9262a45fcad858645d5c33c64be7c914403acc455b4c8245169cd38c46f17683", "admin_pass": "Kudozaiadmin2026", "token_student": "YFAbU70o9yTxfaJi1zp21LzJj6QrqdO0Ys9t6Hc11wd+hK3q3NWm4wLHTaCshmkSMbtci9jjiUeOjDlxthOreSNQZyTVAMKGigS03g5lH9KuYADJej2vbX+OCWy+hmHLbXKNy11YNvZOuf6J3U1UmA==", "token_parent": "QsS9wEIb8TBYqP8pupyHS8wk938TIdLik2+A6X0PaUlM8v3pIJec98zG5twinaDwj5s9EB+4jMLSulJr3CjEoPvFtv93IydPRtlnGp60bQs4V4HDLs94VdvDNtG9hIcUtXmAlkRkdtunu34z+MgD/g==", "token_admin": "mhTOmVTTQEwI86fUMzZhTrqVyzXMz5QZP25ndjEJHJOuiui7Xzz5Wtv2XZqaYaR5dvlpa/jgKTLFrDQt3FGnNO5HiCbrf/HLYmkwf88rf4q7lVSQEoZ4FSiA1tFyjiSOVXYlxpv99mpZU2uLnk1a8g=="};
+  window.MANIFEST = {"tenant_id": "tenant_9614932", "display_name": "Rayyan", "aw_last_synced": "2026-09-06T17:51:39.574237+00:00", "chart_days": ["2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05", "2026-09-06"], "chart_hours": [0.0, 0.0, 0.0, 0.0, 1.07, 0.0, 0.0], "top_apps_labels": ["chrome.exe", "LockApp.exe", "WinRAR.exe", "explorer.exe", "unknown"], "top_apps_values": [0.59, 0.48, 0.0, 0.0, 0.0], "compliance_grid": {"2026-08-31": {"tracker": false, "academic": false, "parent": false}, "2026-09-01": {"tracker": false, "academic": false, "parent": false}, "2026-09-02": {"tracker": false, "academic": false, "parent": false}, "2026-09-03": {"tracker": false, "academic": false, "parent": false}, "2026-09-04": {"tracker": true, "academic": true, "parent": true}, "2026-09-05": {"tracker": false, "academic": false, "parent": false}, "2026-09-06": {"tracker": false, "academic": true, "parent": false}}, "student_reports": [{"name": "Weekly_Reward_Report_V2_2026-09-05", "file": "reports/Weekly_Reward_Report_V2_2026-09-05.pdf.student.enc", "role": "student"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.student.enc", "role": "student"}, {"name": "Summary_For_Kids_2026-09-06", "file": "reports/Summary_For_Kids_2026-09-06.pdf.enc", "role": "student"}, {"name": "Summary_For_Kids_2026-09-05", "file": "reports/Summary_For_Kids_2026-09-05.pdf.enc", "role": "student"}, {"name": "Summary_For_Kids_2026-09-04", "file": "reports/Summary_For_Kids_2026-09-04.pdf.enc", "role": "student"}], "parent_reports": [{"name": "Weekly_Reward_Report_V2_2026-09-05", "file": "reports/Weekly_Reward_Report_V2_2026-09-05.pdf.parent.enc", "role": "parent"}, {"name": "Weekly_Reward_Report_V2_2026-09-04", "file": "reports/Weekly_Reward_Report_V2_2026-09-04.pdf.parent.enc", "role": "parent"}, {"name": "Productivity_Report_2026-09-06", "file": "reports/Productivity_Report_2026-09-06.pdf.enc", "role": "parent"}, {"name": "Productivity_Report_2026-09-05", "file": "reports/Productivity_Report_2026-09-05.pdf.enc", "role": "parent"}, {"name": "Productivity_Report_2026-09-04", "file": "reports/Productivity_Report_2026-09-04.pdf.enc", "role": "parent"}]};
+  const ENV_CONFIG = {"tenant_id": "tenant_9614932", "core_repo": "nooraxollc-source/kudoz-ai-v3.1", "student_hash": "264c8c381bf16c982a4e59b0dd4c6f7808c51a05f64c35db42cc78a2a72875bb", "parent_hash": "9262a45fcad858645d5c33c64be7c914403acc455b4c8245169cd38c46f17683", "admin_pass": "Kudozaiadmin2026", "token_student": "wMEuCYMPh/JPKh5u16NtvBzYoMalQnZGYZg6T3ZnApRMZ8TlLYiGIDOuAIV33zfqY0MNf8eeNmIBo2cQ5mw2XRDVKmXwgTB3nQPaWFmSUUa39CU64aXRpZV2Agf8I2wA2aVBxlTDuIDE/V1XcrlbhA==", "token_parent": "mFH0R8wFbUMr8B2tMXJdLc+35b79lQWe7wJxXY9pQSBX4hxo9KdtkaZRldddvcRxWWsNiLW6oOPDESBVTZyjBGb8/kQbgv4TrreADJ29iJ+rJy5DL3YwuidjXvOabSTY3gML4XurxabT26Ie3fFGVw==", "token_admin": "8kz9orwPm+uhJTki1/twcmNbTgMUM1Kuvf3muEg9/3Uc6eipfLeyDMdOItq4Iw3VMq2Mo7UBuAA6tB0Tf/zewjveQxctma9sNEMVLbT9ci7YZ/hnyFD3DzegiWaj9X+VjWaXfLjuPvbLAQ18pLYwLw=="};
 </script>
 <script>
   let currentRole = null;
@@ -1970,6 +1970,15 @@ function renderReportsList() {
     accessible = window.MANIFEST.parent_reports;
   }
 
+  // Deduplicate files for admin view
+  const seen = new Set();
+  accessible = accessible.filter(item => {
+    const key = item.file || item.name;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
   document.getElementById("metricDeliverables").innerText = accessible.length + " Reports";
 
   if (accessible.length === 0) {
@@ -1977,23 +1986,64 @@ function renderReportsList() {
     return;
   }
 
+  // Segregate deliverables into categories (case-insensitive check)
+  const categories = {
+    weekly: [],
+    student: [],
+    executive: []
+  };
+
   accessible.forEach(item => {
+    const checkTarget = ((item.file || "") + " " + (item.name || "")).toLowerCase();
+    if (checkTarget.includes("weekly_reward") || checkTarget.includes("reward")) {
+      categories.weekly.push(item);
+    } else if (checkTarget.includes("summary_for_kids") || checkTarget.includes("kid")) {
+      categories.student.push(item);
+    } else {
+      categories.executive.push(item);
+    }
+  });
+
+  // Limit each category to the 7 latest records
+  const limitedDeliverables = [
+    ...categories.executive.slice(0, 7).map(i => ({ ...i, category: "executive" })),
+    ...categories.student.slice(0, 7).map(i => ({ ...i, category: "student" })),
+    ...categories.weekly.slice(0, 7).map(i => ({ ...i, category: "weekly" }))
+  ];
+
+  limitedDeliverables.forEach(item => {
     const card = document.createElement("div");
     card.className = "report-card";
+    card.setAttribute("data-category", item.category);
     card.setAttribute("data-report-type", item.file || item.name);
+
     const icon = item.name.includes("Kid") ? "🎮" : (item.name.includes("Reward") ? "🏆" : "📈");
     card.innerHTML = `
       <div class="report-meta">
         <span class="report-icon">${icon}</span>
         <div>
           <div class="report-name">${item.name}</div>
-          <div class="report-sub">Encrypted AES-256 deliverable (${item.role})</div>
+          <div class="report-sub">Encrypted AES-256 Deliverable</div>
         </div>
       </div>
       <button class="btn-decrypt" onclick="decryptAndOpen('${item.file}', '${item.name}', '${item.role}')">Decrypt & View</button>
     `;
     list.appendChild(card);
   });
+
+  // Determine appropriate initial category based on logged-in role
+  let initialCat = "executive";
+  if (currentRole === "student") {
+    initialCat = categories.student.length > 0 ? "student" : "weekly";
+  } else if (categories.executive.length === 0) {
+    initialCat = categories.weekly.length > 0 ? "weekly" : "student";
+  }
+
+  // Activate the matching tab pill
+  const targetPill = document.querySelector(`.kudoz-filter-bar .filter-pill[data-target="${initialCat}"]`) ||
+                     document.querySelector(".kudoz-filter-bar .filter-pill");
+
+  filterKudozReports(initialCat, targetPill);
 }
 
 function initCharts() {
@@ -2215,14 +2265,33 @@ window.filterKudozReports = function(categoryKey, clickedBtn) {
   if (clickedBtn) clickedBtn.classList.add("active");
 
   const reportCards = document.querySelectorAll(".report-card");
+  let visibleCount = 0;
+
   reportCards.forEach(card => {
-    if (categoryKey === "all") {
+    const cardCat = card.getAttribute("data-category") || "";
+    if (cardCat === categoryKey.toLowerCase()) {
       card.style.display = "";
-      return;
+      visibleCount++;
+    } else {
+      card.style.display = "none";
     }
-    const cardText = (card.getAttribute("data-report-type") || card.textContent || "").toLowerCase();
-    card.style.display = cardText.includes(categoryKey.toLowerCase()) ? "" : "none";
   });
+
+  // If no reports exist for this specific tab, show empty feedback
+  const emptyNotice = document.getElementById("categoryEmptyNotice");
+  if (visibleCount === 0) {
+    if (!emptyNotice) {
+      const notice = document.createElement("p");
+      notice.id = "categoryEmptyNotice";
+      notice.style.cssText = "color: var(--muted); text-align:center; padding: 2rem;";
+      notice.innerText = "No reports found in this category.";
+      document.getElementById("reportsList").appendChild(notice);
+    } else {
+      emptyNotice.style.display = "block";
+    }
+  } else if (emptyNotice) {
+    emptyNotice.style.display = "none";
+  }
 };
 
 </script>
